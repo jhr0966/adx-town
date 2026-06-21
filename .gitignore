@@ -1,0 +1,14 @@
+node_modules
+dist
+.env
+.env.local
+.DS_Store
+*.log
+
+.vercel
+test-results
+playwright-report
+
+# 에이전트/개인 파일
+.claude
+20260617_생산자동화그룹_장화랑프로.md
