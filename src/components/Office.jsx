@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { TILE, PLACES, PLACE_LIST, isWall, STATUS, DEFAULT_STATUS } from '../constants'
+import { TILE, PLACES, PLACE_LIST, ANNEX_FLOORS, isWall, STATUS, DEFAULT_STATUS, isAnnex } from '../constants'
+import { getNearbyInteraction } from '../lib/interactions'
 import { createRoom, createLobby } from '../lib/realtime'
 import { roomUrl } from '../lib/room'
 import { pickImage, toShareableSrc } from '../lib/image'
@@ -26,7 +27,13 @@ import ThemeSwitcher from './ThemeSwitcher'
 import { MiniMap } from './office/MiniMap'
 import MembersPanel from './office/MembersPanel'
 import Confetti from './office/Confetti'
-import { Decorations } from './office/Decorations'
+import { AnnexDynamicLayer } from './office/AnnexDynamicLayer'
+import AnnexFloorModal from './office/AnnexFloorModal'
+import InteractionHint from './office/InteractionHint'
+import ActivityOverlay from './office/ActivityOverlay'
+import ArcadeMiniGame from './office/ArcadeMiniGame'
+import EscapeRoomModal from './office/EscapeRoomModal'
+import OfficeToast from './office/OfficeToast'
 
 // 방 ID는 URL ?room=... 로 지정 가능(없으면 main). 여러 방 분리/테스트 격리에 사용
 const URL_ROOM =
@@ -56,6 +63,14 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   const [membersOpen, setMembersOpen] = useState(false) // 멤버/상태 패널
   const [dancing, setDancing] = useState(false) // 내 아바타 춤(Z)
   const [confetti, setConfetti] = useState(0) // 컨페티 버스트 key (0=없음)
+  const [annexOpen, setAnnexOpen] = useState(false) // 별관 층 선택 모달
+  const [activity, setActivity] = useState(null) // 현재 활동 { type, label, prevStatus? }
+  const [toast, setToast] = useState(null) // 토스트 { text, ts }
+  const [miniGame, setMiniGame] = useState(false) // 아케이드 미니게임 모달
+  const [escapeOpen, setEscapeOpen] = useState(false) // 방탈출 모달
+  const activityRef = useRef(null)
+  activityRef.current = activity
+  const toastTimer = useRef(null)
   const [stageSize, setStageSize] = useState({ w: 0, h: 0 }) // 미니맵 뷰포트 계산용
   const danceTimer = useRef(null)
   const [chatOpen, setChatOpen] = useState(() => !isSmallScreen()) // 모바일은 기본 닫힘
@@ -118,6 +133,26 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     setMyStatus(s)
     roomRef.current?.updateState({ status: s })
   }, [])
+  const myStatusRef = useRef(myStatus)
+  myStatusRef.current = myStatus
+
+  // 활동 해제 — (낮잠 등) 상태 자동복구 + 동료에게 전파
+  const clearActivity = useCallback(() => {
+    const prev = activityRef.current
+    if (!prev) return
+    if (prev.prevStatus) changeStatus(prev.prevStatus)
+    setActivity(null)
+    roomRef.current?.updateState({ activity: null })
+  }, [changeStatus])
+
+  // 토스트 메시지 (2.6초 후 사라짐)
+  const showToast = useCallback((text) => {
+    if (!text) return
+    setToast({ text, ts: Date.now() })
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 2600)
+  }, [])
+  useEffect(() => () => clearTimeout(toastTimer.current), [])
 
   // 컨페티 한 번 터뜨리기
   const burstConfetti = useCallback(() => setConfetti(Date.now()), [])
@@ -142,9 +177,16 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   }, [me.id])
   useEffect(() => () => clearTimeout(danceTimer.current), [])
 
-  // 근접 음성 — 훅으로 분리
+  // 같은 장소/층(place)에 있는 사람만 보이게 필터 (별관 개인 이동 대응)
+  const visiblePeers = useMemo(() => {
+    const m = new Map()
+    for (const [id, p] of peers) if ((p.place || 'office') === place) m.set(id, p)
+    return m
+  }, [peers, place])
+
+  // 근접 음성 — 같은 층 사람만 연결 대상
   const { voiceOn, voicePeers, levels, toggleVoice, handleSignal: handleVoiceSignal } =
-    useProximityVoice({ roomRef, me, pos, peers })
+    useProximityVoice({ roomRef, me, pos, peers: visiblePeers })
 
   // 자비스(AI 봇) — 훅으로 분리
   const {
@@ -177,7 +219,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   useEffect(() => {
     const room = createRoom({
       roomId: ROOM_ID,
-      me: { ...me, ...PLACES.office.START, status: DEFAULT_STATUS },
+      me: { ...me, ...PLACES.office.START, status: DEFAULT_STATUS, place: 'office' },
     })
     roomRef.current = room
     room.onRtc(handleVoiceSignal) // 근접 음성 시그널링 → useProximityVoice
@@ -213,13 +255,15 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         room.sendDraw({ kind: 'init', strokes: strokesRef.current })
       }
     })
-    // 장소 이동 — 모두 함께 이동
+    // 장소 이동(전원) — 사무실/대회의실 버튼만 사용. 별관에 있는 동안엔 휩쓸리지 않음(개인 이동 우선).
     room.onPlace((p) => {
       if (!PLACES[p] || p === placeRef.current) return
+      if (isAnnex(placeRef.current)) return
+      setActivity(null)
       setPlace(p)
       const st = PLACES[p].START
       setPos(st)
-      roomRef.current?.updateState(st)
+      roomRef.current?.updateState({ place: p, ...st })
     })
     room.onScreen((s) => {
       setScreen(s)
@@ -352,17 +396,19 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     return true
   }, [])
 
-  // 키보드·D패드 이동 — 수동 이동은 자동 이동을 취소
+  // 키보드·D패드 이동 — 수동 이동은 자동 이동/활동을 취소
   const moveBy = useCallback((dr, dc) => {
     if (Date.now() < stunUntilRef.current) return // 기절 중 이동 불가
+    if (activityRef.current) clearActivity()
     stopAuto()
     const cur = posRef.current
     stepTo(cur.row + dr, cur.col + dc)
-  }, [stepTo, stopAuto])
+  }, [stepTo, stopAuto, clearActivity])
 
   // 클릭/탭한 칸으로 자동 이동 (길찾기)
   const goTo = useCallback((row, col) => {
     if (Date.now() < stunUntilRef.current) return // 기절 중 이동 불가
+    if (activityRef.current) clearActivity()
     const pl = PLACES[placeRef.current]
     const target = nearestWalkable(pl, row, col)
     if (!target) return
@@ -378,7 +424,59 @@ export default function Office({ me, roomId, roomName, onLeave }) {
       p.shift()
       if (!p.length) stopAuto()
     }, 150)
-  }, [stepTo, stopAuto])
+  }, [stepTo, stopAuto, clearActivity])
+
+  // ── 별관 개인 이동 + 상호작용 ──
+  // 장소/층 진입. broadcast=true → 사무실/대회의실 전원 이동. false → 별관 개인 이동.
+  const enterPlace = useCallback((p, { broadcast = false } = {}) => {
+    if (!PLACES[p] || p === placeRef.current) return
+    clearActivity()
+    stopAuto()
+    setPlace(p)
+    const st = PLACES[p].START
+    setPos(st)
+    roomRef.current?.updateState({ place: p, ...st })
+    if (broadcast) roomRef.current?.setPlace(p)
+    setAnnexOpen(false)
+  }, [clearActivity, stopAuto])
+
+  // 상호작용 실행 (타입별 처리)
+  const runInteraction = useCallback((it) => {
+    if (!it) return
+    const moveTo = (t) => { if (t) { stopAuto(); setPos(t); roomRef.current?.updateState({ row: t.row, col: t.col }) } }
+    const broadcastAct = (a) => roomRef.current?.updateState({ activity: a ? { type: a.type, label: a.label } : null })
+    switch (it.type) {
+      case 'floor-change': enterPlace(it.target, { broadcast: false }); break
+      case 'toast': case 'bar-order': showToast(it.message); break
+      case 'minigame': setMiniGame(true); break
+      case 'escape': setEscapeOpen(true); break
+      case 'dance': danceMe(); break
+      case 'nap': {
+        moveTo(it.target)
+        const prevStatus = myStatusRef.current
+        changeStatus('away')
+        const a = it.activity || { type: 'nap', label: '낮잠 중 💤' }
+        setActivity({ ...a, prevStatus })
+        broadcastAct(a)
+        break
+      }
+      default: { // sit / onsen / gym
+        moveTo(it.target)
+        const a = it.activity || { type: it.type, label: it.label.replace(/^E:\s*/, '') }
+        setActivity(a)
+        broadcastAct(a)
+        break
+      }
+    }
+  }, [enterPlace, showToast, danceMe, changeStatus, stopAuto])
+
+  // 현재 위치에서 가장 가까운 상호작용 (별관에서만)
+  const interaction = useMemo(
+    () => (isAnnex(place) ? getNearbyInteraction(pos, PLACES[place].INTERACTIONS) : null),
+    [place, pos],
+  )
+  const interactionRef = useRef(null)
+  interactionRef.current = interaction
 
   // 돌 던지기 — 현재 위치에서 클릭한 칸으로. 1초 쿨다운.
   const throwRock = useCallback((row, col) => {
@@ -473,13 +571,17 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         case 'ArrowRight': case 'd': case 'D': moveBy(0, 1); break
         case 'f': case 'F': applaud(); break
         case 'z': case 'Z': danceMe(); break
+        case 'e': case 'E':
+          if (interactionRef.current) runInteraction(interactionRef.current)
+          else return
+          break
         default: return
       }
       e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [moveBy, applaud, danceMe])
+  }, [moveBy, applaud, danceMe, runInteraction])
 
   const zoom = useCallback((dir) => {
     setView('follow')
@@ -615,13 +717,16 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     roomRef.current?.sendDraw({ kind: 'clear' })
   }, [])
 
-  // 장소 이동 (모두 함께) — broadcast 후 onPlace가 전환 처리
+  // 사무실/대회의실 — 기존처럼 전원 이동(broadcast)
   const goPlace = useCallback((p) => {
-    if (p !== placeRef.current) roomRef.current?.setPlace(p)
-  }, [])
+    enterPlace(p, { broadcast: true })
+  }, [enterPlace])
 
   // 멤버 로스터 (나 + 동료) / 현재 장소 라벨
-  const placeLabel = PLACE_LIST.find((pl) => pl.key === place)?.label || ''
+  const placeLabel =
+    PLACE_LIST.find((pl) => pl.key === place)?.label ||
+    ANNEX_FLOORS.find((f) => f.key === place)?.name ||
+    ''
   const roster = useMemo(() => {
     const mine = { id: me.id, face: me.avatar, name: me.nickname, status: myStatus, isMe: true }
     const others = [...peers.entries()].map(([id, p]) => ({
@@ -647,6 +752,14 @@ export default function Office({ me, roomId, roomName, onLeave }) {
               {pl.label}
             </button>
           ))}
+          <button
+            className={'place-btn annex-btn' + (isAnnex(place) ? ' on' : '')}
+            onClick={() => setAnnexOpen(true)}
+            aria-label="별관 층 선택"
+            title="별관 — 층 선택"
+          >
+            🏬 별관
+          </button>
         </span>
         <span className="count">접속 {peers.size + 1}명</span>
         <button className="status-pill" onClick={() => setMembersOpen((o) => !o)} title="내 상태 / 멤버">
@@ -721,7 +834,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
           >
             <MapFloor place={P} />
             <ZoneLabels zones={P.ZONES} />
-            <Decorations decor={P.DECOR} />
+            <AnnexDynamicLayer place={P} />
             {P.BOARDS.map((b) => (
               <Whiteboard key={b.idx} board={b} text={boards[b.idx] || ''} onSave={saveBoard} />
             ))}
@@ -736,12 +849,12 @@ export default function Office({ me, roomId, roomName, onLeave }) {
               onAddStroke={addStroke}
               onClearDraw={clearStrokes}
             />
-            <Avatar state={{ ...me, ...pos, status: myStatus }} isMe bubble={bubbles[me.id]?.text} emote={emotes[me.id]} voice={voiceOn} level={voiceOn ? levels.self : 0} stunned={!!stunned[me.id]} dancing={dancing} />
-            {[...peers.entries()].map(([id, p]) => (
+            <Avatar state={{ ...me, ...pos, status: myStatus }} isMe bubble={bubbles[me.id]?.text} emote={emotes[me.id]} voice={voiceOn} level={voiceOn ? levels.self : 0} stunned={!!stunned[me.id]} dancing={dancing} activity={activity} />
+            {[...visiblePeers.entries()].map(([id, p]) => (
               <Avatar key={id} state={p} bubble={bubbles[id]?.text} emote={emotes[id]} voice={voicePeers.has(id)} level={levels.peers[id] || 0} stunned={!!stunned[id]} />
             ))}
             {rocks.map((r) => <Rock key={r.id} rock={r} />)}
-            {[...peers.entries()].map(([id, p]) =>
+            {[...visiblePeers.entries()].map(([id, p]) =>
               p.botVisible && p.row != null ? (
                 <AiBot
                   key={id + '-bot'}
@@ -752,7 +865,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
               ) : null,
             )}
             {Object.entries(cursors).map(([id, c]) =>
-              peers.has(id) ? <Cursor key={id} c={c} /> : null,
+              visiblePeers.has(id) ? <Cursor key={id} c={c} /> : null,
             )}
             {myCursor && <Cursor c={{ ...myCursor, nickname: me.nickname, color: me.color }} />}
             {(botOn || botExiting) && (
@@ -777,11 +890,15 @@ export default function Office({ me, roomId, roomName, onLeave }) {
             place={P}
             mePos={pos}
             meColor={me.color}
-            peers={peers}
+            peers={visiblePeers}
             cam={cam}
             stageW={stageSize.w}
             stageH={stageSize.h}
           />
+
+          {/* 별관 상호작용 힌트(하단 중앙) + 활동 상태 배너 */}
+          <InteractionHint interaction={interaction} onRun={runInteraction} />
+          <ActivityOverlay activity={activity} onStop={clearActivity} />
 
           {membersOpen && (
             <MembersPanel
@@ -845,7 +962,26 @@ export default function Office({ me, roomId, roomName, onLeave }) {
 
       {confetti ? <Confetti key={confetti} /> : null}
 
-      <p className="hint">방향키·WASD 이동 · F 박수 · Z 춤 · 📺 스크린 클릭해서 사진 공유</p>
+      <OfficeToast toast={toast} />
+
+      {annexOpen && (
+        <AnnexFloorModal
+          current={place}
+          onPick={(p) => enterPlace(p, { broadcast: false })}
+          onClose={() => setAnnexOpen(false)}
+        />
+      )}
+      {miniGame && (
+        <ArcadeMiniGame onClose={() => setMiniGame(false)} onWin={burstConfetti} />
+      )}
+      {escapeOpen && (
+        <EscapeRoomModal
+          onClose={() => setEscapeOpen(false)}
+          onWin={() => { burstConfetti(); roomRef.current?.sendEmote({ from: me.id, emoji: '🎉' }) }}
+        />
+      )}
+
+      <p className="hint">방향키·WASD 이동 · F 박수 · Z 춤 · E 상호작용 · 🏬 별관 층 이동</p>
     </div>
   )
 }

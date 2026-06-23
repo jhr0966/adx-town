@@ -1926,6 +1926,154 @@ button.chat-min { display: none; }
   animation: adx-twinkle 2s ease-in-out infinite;
 }
 
+/* ============================================================
+   별관(別館) — 여러 층 타일 / 동적 효과 / 모달·힌트·토스트
+   모든 색은 테마 토큰(--bg/--surface/--accent/--accent-2/--border/--shadow).
+   ============================================================ */
+
+/* 새 모션 토큰 */
+@keyframes adx-steam { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.7); } 30% { opacity: .7; } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1.3); } }
+@keyframes adx-water-ripple { 0% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 35%, transparent); } 50% { box-shadow: inset 0 0 0 6px color-mix(in srgb, #fff 12%, transparent); } 100% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 35%, transparent); } }
+@keyframes adx-fire { 0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: .92; } 35% { transform: translateX(-50%) scaleY(1.25) scaleX(.85); opacity: 1; } 70% { transform: translateX(-50%) scaleY(.9) scaleX(1.12); opacity: .85; } }
+@keyframes adx-ember { 0% { opacity: .9; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -38px) scale(.4); } }
+@keyframes adx-neon { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); } 50% { opacity: .72; filter: drop-shadow(0 0 11px var(--accent)); } }
+@keyframes adx-cat-walk { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes adx-tail { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes adx-treadmill { from { background-position: 0 0; } to { background-position: 0 -14px; } }
+@keyframes adx-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes adx-zzz { 0% { opacity: 0; transform: translate(-50%, 2px) scale(.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-30%, -22px) scale(1.1); } }
+@keyframes adx-skyline-twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes adx-modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes adx-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+/* ── 바닥/지형 ── */
+.tile.annexFloor { background: transparent; }
+.tile.grass { background: color-mix(in srgb, #6fae54 24%, var(--floor)); }
+.tile.deck { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 28%, var(--surface)), color-mix(in srgb, var(--accent) 15%, var(--floor-alt))); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
+.tile.onsenrock { background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--wall) 80%, #6b5a45), color-mix(in srgb, var(--wall) 60%, #4a3c2c)); border-radius: 7px; box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.16), 0 2px 4px var(--shadow); }
+.tile.spaWater {
+  position: relative;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 65%, #fff), color-mix(in srgb, var(--accent-2) 85%, #0a4f48));
+  background-size: 220% 220%;
+  animation: adx-drift 7s ease-in-out infinite;
+}
+.tile.spaWater::after { content: ''; position: absolute; inset: 2px; border-radius: 4px; animation: adx-water-ripple 3.2s ease-in-out infinite; }
+.tile.spaWater::before { content: '♨'; position: absolute; left: 50%; bottom: 6px; font-size: 11px; color: #fff; opacity: 0; animation: adx-steam 3.4s ease-in infinite; }
+.tile.saunaMat { background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--accent) 26%, var(--surface)) 0 8px, color-mix(in srgb, var(--accent) 14%, var(--surface)) 8px 16px); }
+.tile.rug { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 7px, color-mix(in srgb, var(--accent-2) 10%, transparent) 7px 14px); border-radius: 2px; }
+.tile.napRoom { background: color-mix(in srgb, var(--text) 14%, var(--bg)); }
+.tile.escapeWall { background: color-mix(in srgb, var(--text) 30%, #14101f); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 18%, transparent); }
+.tile.skyline { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 18%, #0c1430), color-mix(in srgb, var(--accent) 10%, #1a1030)); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--accent) 30%, transparent); animation: adx-skyline-twinkle 4s ease-in-out infinite; }
+
+/* ── 가구/오브젝트 ── */
+.tile.cafeCounter, .tile.barCounter, .tile.bar { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 58%, #5a3422), color-mix(in srgb, var(--accent) 36%, #3a2014)); border-radius: 4px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 2px 5px var(--shadow); }
+.tile.barCounter .tile-icon { animation: adx-neon 2.4s ease-in-out infinite; }
+.tile.foodTable { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 42%, var(--surface)), color-mix(in srgb, var(--accent) 26%, var(--surface))); border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 5px var(--shadow); }
+.tile.foodTable .tile-icon { font-size: 14px; }
+.tile.pochaTent { background: linear-gradient(180deg, #d9484a, #b3343a); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); }
+.tile.pochaTent .tile-icon { animation: adx-neon 2s ease-in-out infinite; }
+.tile.arcade { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 55%, #1a1030), color-mix(in srgb, var(--accent-2) 30%, #120a22)); border-radius: 6px 6px 3px 3px; box-shadow: 0 3px 6px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.tile.arcade .tile-icon { font-size: 18px; animation: adx-bob-fast 0.9s ease-in-out infinite; }
+.tile.keypad { background: #1c1726; border-radius: 5px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 40%, transparent), 0 0 8px color-mix(in srgb, var(--accent-2) 35%, transparent); }
+.tile.keypad .tile-icon { font-size: 14px; animation: adx-pulse-soft 1.6s ease-in-out infinite; }
+.tile.treadmill { background: #2a2535 linear-gradient(0deg, rgba(255, 255, 255, 0.16) 50%, transparent 50%); background-size: 100% 14px; border-radius: 4px; animation: adx-treadmill 0.6s linear infinite; box-shadow: 0 2px 4px var(--shadow); }
+.tile.bike, .tile.bench, .tile.dumbbell { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 38%, var(--surface)), color-mix(in srgb, var(--accent-2) 22%, var(--surface))); border-radius: 5px; box-shadow: 0 2px 4px var(--shadow); }
+.tile.bike .tile-icon, .tile.bench .tile-icon, .tile.dumbbell .tile-icon, .tile.treadmill .tile-icon { font-size: 15px; }
+.tile.yoga { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); border-radius: 6px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+.tile.catTower { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 40%, #7a5a3a), color-mix(in srgb, var(--accent) 24%, #5a3f28)); border-radius: 5px; }
+.tile.petToy .tile-icon { font-size: 15px; animation: adx-bob-sm 1.8s ease-in-out infinite; }
+.tile.napBed { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 40%, var(--surface)), color-mix(in srgb, var(--accent-2) 26%, var(--surface))); border-radius: 7px 7px 4px 4px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 2px 5px var(--shadow); }
+.tile.tent { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 55%, #c25b3a), color-mix(in srgb, var(--accent) 32%, #8a3f28)); clip-path: polygon(50% 8%, 100% 100%, 0 100%); }
+.tile.campChair .tile-icon { font-size: 15px; }
+.tile.campfire { position: relative; background: radial-gradient(circle at 50% 70%, #b3343a 0%, transparent 60%); }
+.tile.campfire::before { content: '🔥'; position: absolute; left: 50%; bottom: 4px; font-size: 22px; transform-origin: 50% 90%; transform: translateX(-50%); animation: adx-fire 0.5s ease-in-out infinite; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 80%, transparent)); }
+.tile.stairUp, .tile.stairDown { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 30%, var(--surface)), color-mix(in srgb, var(--accent-2) 16%, var(--surface-2))); border-radius: 5px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 35%, transparent); }
+.tile.stairUp .tile-icon, .tile.stairDown .tile-icon { font-size: 15px; animation: adx-bob-sm 2s ease-in-out infinite; }
+.tile.lantern .tile-icon { font-size: 21px; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 80%, transparent)); animation: adx-twinkle 2.6s ease-in-out infinite; }
+.tile.barstool { background: transparent; }
+.tile.barstool .tile-icon { font-size: 15px; opacity: 0.9; }
+.tile.fountain { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent-2) 75%, #fff), color-mix(in srgb, var(--accent-2) 80%, #0a4f48)); border-radius: 50%; }
+
+/* ── 분위기 파티클(추가): 불씨 / 별 ── */
+.ember { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 0; border-radius: 50%; background: radial-gradient(circle, #ffd27a, color-mix(in srgb, var(--accent) 70%, transparent) 60%, transparent 70%); pointer-events: none; z-index: 6; animation: adx-ember 2.4s ease-in infinite; }
+.star { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: radial-gradient(circle, #fff, color-mix(in srgb, var(--accent-2) 60%, transparent) 55%, transparent 70%); pointer-events: none; z-index: 2; animation: adx-twinkle 2.4s ease-in-out infinite; }
+
+/* ── 고양이 NPC ── */
+.npc-cat { position: absolute; display: grid; place-items: center; z-index: 4; cursor: pointer; animation: adx-cat-walk 0.6s ease-in-out infinite; transition: left 1.4s ease, top 1.4s ease; }
+.npc-face { font-size: 22px; filter: drop-shadow(0 3px 3px var(--shadow)); animation: adx-tail 1.3s ease-in-out infinite; }
+.npc-face.flip { transform: scaleX(-1); }
+.npc-say { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px var(--shadow); animation: adx-pop 0.15s ease; }
+.npc-heart { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 16px; pointer-events: none; animation: adx-floatup 1.2s ease-in forwards; }
+
+/* ── 아바타 활동 애니메이션 ── */
+.act-icon { position: absolute; bottom: calc(100% - 4px); left: 50%; transform: translateX(-50%); font-size: 16px; pointer-events: none; z-index: 6; }
+.avatar.act-nap .act-icon { animation: adx-zzz 2.2s ease-in infinite; }
+.avatar.act-nap .avatar-emoji { transform: rotate(14deg); }
+.avatar.act-gym-treadmill .avatar-emoji { animation: adx-bob-fast 0.42s ease-in-out infinite; }
+.avatar.act-gym-bike .avatar-emoji { animation: adx-bob-sm 0.4s ease-in-out infinite; }
+.avatar.act-gym-bench .avatar-emoji,
+.avatar.act-gym-dumbbell .avatar-emoji { animation: adx-lift 0.9s ease-in-out infinite; }
+.avatar.act-yoga .avatar-emoji { animation: adx-pulse-soft 3s ease-in-out infinite; }
+.avatar.act-onsen .avatar-emoji, .avatar.act-campfire .avatar-emoji { animation: adx-bob 3.2s ease-in-out infinite; }
+
+/* ── 별관 층 선택 모달 ── */
+.annex-modal-backdrop { position: fixed; inset: 0; z-index: 90; background: color-mix(in srgb, var(--text) 38%, transparent); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.annex-modal { width: min(680px, 96vw); max-height: 88vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 30px 80px var(--shadow); padding: 20px; animation: adx-modal-in 0.22s ease; }
+.am-head { display: flex; align-items: center; justify-content: space-between; }
+.am-head h2 { margin: 0; font-family: 'Fredoka', sans-serif; font-size: 22px; color: var(--text); }
+.am-x { border: none; background: var(--surface-2); color: var(--text); width: 32px; height: 32px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+.am-sub { margin: 6px 0 14px; color: var(--muted); font-size: 13px; }
+.am-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.am-card { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 14px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
+.am-card:hover { transform: translateY(-3px); box-shadow: 0 10px 22px var(--shadow); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.am-card.here { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.am-icon { font-size: 30px; }
+.am-name { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.am-badge { font-size: 10px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+.am-desc { font-size: 12px; color: var(--muted); }
+.am-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.am-tag { font-size: 10.5px; font-weight: 600; color: var(--accent-2); background: color-mix(in srgb, var(--accent-2) 14%, transparent); border-radius: 999px; padding: 2px 8px; }
+.place-btn.annex-btn.on { background: var(--accent); color: #fff; }
+
+/* ── 상호작용 힌트 ── */
+.interact-hint { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); cursor: pointer; animation: adx-pop 0.18s ease; }
+.ih-key { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; }
+
+/* ── 활동 상태 배너 ── */
+.activity-overlay { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); }
+.ao-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: adx-pulse-soft 1.4s ease-in-out infinite; }
+.ao-stop { border: none; background: var(--surface-2); color: var(--muted); border-radius: 8px; padding: 3px 9px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+/* ── 토스트 ── */
+.office-toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 95; max-width: min(420px, 92vw); padding: 11px 18px; border-radius: 14px; background: var(--text); color: var(--bg); font-size: 13px; font-weight: 600; text-align: center; box-shadow: 0 12px 30px var(--shadow); animation: adx-pop 0.18s ease; }
+
+/* ── 미니게임 / 방탈출 모달 ── */
+.mini-backdrop { position: fixed; inset: 0; z-index: 92; background: color-mix(in srgb, var(--text) 42%, transparent); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.mini-modal, .escape-modal { width: min(440px, 94vw); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 30px 80px var(--shadow); padding: 18px; animation: adx-modal-in 0.22s ease; }
+.escape-modal.shake { animation: adx-shake 0.5s ease; }
+.mini-modal .am-head h2, .escape-modal .am-head h2 { font-size: 19px; }
+.mini-center { text-align: center; padding: 14px 6px; color: var(--text); }
+.mini-go { margin-top: 12px; border: none; background: var(--accent); color: #fff; border-radius: 12px; padding: 10px 22px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.mini-ghost, .mini-row .mini-ghost { background: var(--surface-2); color: var(--text); }
+.mini-row { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+.mini-row button { border: none; border-radius: 12px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
+.mini-result { font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+.mini-grade { color: var(--muted); }
+.mini-arena { position: relative; height: 240px; margin-top: 12px; background: color-mix(in srgb, var(--accent-2) 8%, var(--surface-2)); border-radius: 14px; overflow: hidden; }
+.mini-hud { display: flex; justify-content: space-between; padding: 8px 12px; font-weight: 700; color: var(--text); }
+.mini-target { position: absolute; width: 46px; height: 46px; border-radius: 50%; border: none; transform: translate(-50%, -50%); background: radial-gradient(circle at 38% 32%, #fff, var(--accent)); color: #fff; font-size: 18px; cursor: pointer; box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 70%, transparent); animation: adx-glow 0.7s ease-in-out infinite; }
+.escape-clues { margin: 4px 0 12px; padding-left: 18px; color: var(--text); font-size: 13px; line-height: 1.7; }
+.escape-display { text-align: center; font-family: 'Fredoka', sans-serif; font-size: 30px; letter-spacing: 10px; color: var(--text); background: var(--surface-2); border-radius: 12px; padding: 8px; }
+.escape-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.escape-key { border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 12px; padding: 12px 0; font-size: 17px; font-weight: 700; cursor: pointer; }
+.escape-key:hover { border-color: var(--accent); }
+
+@media (max-width: 720px) {
+  .am-grid { grid-template-columns: 1fr 1fr; }
+  .interact-hint { bottom: 120px; font-size: 12px; }
+  .office-toast { bottom: 130px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; }
 }
