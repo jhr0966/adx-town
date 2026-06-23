@@ -19,6 +19,11 @@ const TILE_VIEW = {
   wall: { cls: 'wall', icon: '' },
   // ── 별관(別館) 타일 ──
   annexFloor: { cls: 'annexFloor', icon: '' },
+  flrGreen: { cls: 'flrGreen', icon: '' },
+  flrTan: { cls: 'flrTan', icon: '' },
+  flrPeach: { cls: 'flrPeach', icon: '' },
+  flrPurple: { cls: 'flrPurple', icon: '' },
+  flrLav: { cls: 'flrLav', icon: '' },
   deck: { cls: 'deck', icon: '' },
   onsenrock: { cls: 'onsenrock', icon: '' },
   spaWater: { cls: 'spaWater', icon: '' },

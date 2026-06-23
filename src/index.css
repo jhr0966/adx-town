@@ -83,7 +83,7 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
 /* ── 모션 토큰 (keyframes) ── */
 @keyframes adx-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes adx-pop { 0% { opacity: 0; transform: translateY(14px) scale(.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes adx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes adx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes adx-bob-sm { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes adx-bob-fast { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes adx-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
@@ -976,19 +976,19 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
   position: absolute;
   bottom: 2px;
   left: 50%;
-  width: 30px;
-  height: 8px;
+  width: 24px;
+  height: 7px;
   border-radius: 50%;
   transform: translateX(-50%);
-  opacity: 0.5;
+  opacity: 0.45;
   filter: blur(1.5px);
 }
 .avatar-emoji {
   position: relative;
   z-index: 1;
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1;
-  filter: drop-shadow(0 4px 4px var(--shadow));
+  filter: drop-shadow(0 3px 3px var(--shadow));
 }
 .avatar.me .avatar-emoji { animation: adx-bob 2.8s ease-in-out infinite; }
 .avatar-name {
@@ -1948,6 +1948,12 @@ button.chat-min { display: none; }
 
 /* ── 바닥/지형 ── */
 .tile.annexFloor { background: transparent; }
+/* 방별 바닥 틴트 — 부드러운 대각 해치 */
+.tile.flrGreen { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 10px, color-mix(in srgb, #6fae54 9%, transparent) 10px 20px); }
+.tile.flrTan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 11%, transparent) 0 10px, color-mix(in srgb, var(--accent) 6%, transparent) 10px 20px); }
+.tile.flrPeach { background: repeating-linear-gradient(45deg, color-mix(in srgb, #f0936b 13%, transparent) 0 10px, color-mix(in srgb, #f0936b 7%, transparent) 10px 20px); }
+.tile.flrPurple { background: repeating-linear-gradient(45deg, color-mix(in srgb, #9a7bd6 16%, transparent) 0 10px, color-mix(in srgb, #9a7bd6 9%, transparent) 10px 20px); }
+.tile.flrLav { background: repeating-linear-gradient(45deg, color-mix(in srgb, #b58fd1 15%, transparent) 0 10px, color-mix(in srgb, #b58fd1 8%, transparent) 10px 20px); }
 .tile.grass { background: color-mix(in srgb, #6fae54 24%, var(--floor)); }
 .tile.deck { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 28%, var(--surface)), color-mix(in srgb, var(--accent) 15%, var(--floor-alt))); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
 .tile.onsenrock { background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--wall) 80%, #6b5a45), color-mix(in srgb, var(--wall) 60%, #4a3c2c)); border-radius: 7px; box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.16), 0 2px 4px var(--shadow); }

@@ -123,8 +123,16 @@ function buildAnnex() {
     for (let r = 19; r <= ROWS - 2; r++) g.set(r, c, 'wall')
   }
 
+  // 방별 바닥 틴트 (목업처럼 부드러운 색으로 공간 구분)
+  g.rect(1, 1, 14, 14, 'flrGreen')     // 휴게실
+  g.rect(1, 46, 14, 58, 'flrTan')      // 식당
+  g.rect(19, 1, 32, 14, 'flrPeach')    // 헬스룸
+  g.rect(19, 16, 32, 29, 'flrGreen')   // 온천
+  g.rect(19, 31, 32, 44, 'flrPurple')  // 게임룸
+  g.rect(19, 46, 32, 58, 'flrLav')     // 노래방
+
   // ── 🛋️ 휴게실 ── TV·ㄷ소파·책장·주크박스
-  g.rect(3, 2, 13, 13, 'rug')
+  g.rect(7, 5, 11, 9, 'rug')
   g.set(2, 4, 'tv'); g.set(2, 5, 'tv')
   for (let c = 8; c <= 11; c++) g.set(2, c, 'shelf')
   for (let c = 4; c <= 10; c++) g.set(6, c, 'sofa')
