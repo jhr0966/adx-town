@@ -24,6 +24,7 @@ const TILE_VIEW = {
   flrPeach: { cls: 'flrPeach', icon: '' },
   flrPurple: { cls: 'flrPurple', icon: '' },
   flrLav: { cls: 'flrLav', icon: '' },
+  doorway: { cls: 'doorway', icon: '' },
   deck: { cls: 'deck', icon: '' },
   onsenrock: { cls: 'onsenrock', icon: '' },
   spaWater: { cls: 'spaWater', icon: '' },

@@ -1,4 +1,5 @@
-// 가까운 상호작용 안내 칩 — PC는 E키, 모바일은 칩을 눌러 실행.
+// 가까운 상호작용 안내 칩 — PC는 Space 키, 모바일은 칩을 눌러 실행.
+// ih-key(Space 표기)는 터치 환경에선 CSS로 숨기고 라벨 버튼만 보인다.
 export default function InteractionHint({ interaction, onRun }) {
   if (!interaction) return null
   return (
@@ -7,8 +8,8 @@ export default function InteractionHint({ interaction, onRun }) {
       onClick={() => onRun(interaction)}
       aria-label={interaction.label}
     >
-      <span className="ih-key">E</span>
-      <span className="ih-label">{interaction.label.replace(/^E:\s*/, '')}</span>
+      <span className="ih-key">Space</span>
+      <span className="ih-label">{interaction.label}</span>
     </button>
   )
 }

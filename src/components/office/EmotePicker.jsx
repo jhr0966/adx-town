@@ -1,4 +1,5 @@
-export const EMOJIS = ['👍', '👏', '🎉', '😂', '😍', '😮', '😢', '🔥', '❤️', '🙏', '👋', '💯']
+// 💃 춤 · 👏 박수는 전용 동작(Office.sendEmote)으로 연결. 개수는 적당히 줄임.
+export const EMOJIS = ['💃', '👏', '👍', '❤️', '😂', '🎉', '🔥']
 
 export function EmotePicker({ onPick, onClose }) {
   return (

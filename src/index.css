@@ -1948,6 +1948,8 @@ button.chat-min { display: none; }
 
 /* ── 바닥/지형 ── */
 .tile.annexFloor { background: transparent; }
+/* 방 출입구 — 밝은 문턱 */
+.tile.doorway { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
 /* 방별 바닥 틴트 — 부드러운 대각 해치 */
 .tile.flrGreen { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 10px, color-mix(in srgb, #6fae54 9%, transparent) 10px 20px); }
 .tile.flrTan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 11%, transparent) 0 10px, color-mix(in srgb, var(--accent) 6%, transparent) 10px 20px); }
@@ -2048,7 +2050,7 @@ button.chat-min { display: none; }
 
 /* ── 상호작용 힌트 ── */
 .interact-hint { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); cursor: pointer; animation: adx-pop 0.18s ease; }
-.ih-key { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; }
+.ih-key { display: inline-grid; place-items: center; min-width: 42px; height: 22px; padding: 0 8px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.3px; }
 
 /* ── 활동 상태 배너 ── */
 .activity-overlay { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); }
@@ -2081,8 +2083,14 @@ button.chat-min { display: none; }
 
 @media (max-width: 720px) {
   .am-grid { grid-template-columns: 1fr 1fr; }
-  .interact-hint { bottom: 120px; font-size: 12px; }
-  .office-toast { bottom: 130px; }
+  /* 모바일: 상호작용 가능 시 누르기 쉬운 큰 버튼으로, Space 칩은 숨김 */
+  .interact-hint { bottom: 150px; font-size: 14px; padding: 11px 20px; background: var(--accent); color: #fff; border-color: transparent; }
+  .interact-hint .ih-key { display: none; }
+  .office-toast { bottom: 150px; }
+}
+/* 터치 기기(포인터 없음)에서도 Space 칩 숨김 */
+@media (pointer: coarse) {
+  .interact-hint .ih-key { display: none; }
 }
 
 /* ============================================================

@@ -594,9 +594,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         case 'ArrowDown': case 's': case 'S': moveBy(1, 0); break
         case 'ArrowLeft': case 'a': case 'A': moveBy(0, -1); break
         case 'ArrowRight': case 'd': case 'D': moveBy(0, 1); break
-        case 'f': case 'F': applaud(); break
-        case 'z': case 'Z': danceMe(); break
-        case 'e': case 'E':
+        case ' ': case 'Spacebar': // 상호작용 (스페이스)
           if (interactionRef.current) runInteraction(interactionRef.current)
           else return
           break
@@ -606,7 +604,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [moveBy, applaud, danceMe, runInteraction])
+  }, [moveBy, runInteraction])
 
   const zoom = useCallback((dir) => {
     setView('follow')
@@ -710,12 +708,14 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     roomRef.current?.setBoard({ idx, text })
   }, [])
 
-  // 감정표현(이모트) 전송 — 축하 이모지는 컨페티도 함께
+  // 감정표현(이모트) 전송 — 👏 박수(컨페티), 💃 춤은 전용 동작으로
   const sendEmote = useCallback((emoji) => {
-    roomRef.current?.sendEmote({ from: me.id, emoji })
-    if (emoji === '👏' || emoji === '🎉' || emoji === '🙌') burstConfetti()
     setShowEmotes(false)
-  }, [me.id, burstConfetti])
+    if (emoji === '💃') { danceMe(); return }
+    if (emoji === '👏') { applaud(); return }
+    roomRef.current?.sendEmote({ from: me.id, emoji })
+    if (emoji === '🎉' || emoji === '🙌') burstConfetti()
+  }, [me.id, burstConfetti, danceMe, applaud])
 
   // 확성기 — 전체에게 전광판으로 전송
   const sendAnnounce = useCallback((text) => {
@@ -1018,7 +1018,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         />
       )}
 
-      <p className="hint">방향키·WASD 이동 · F 박수 · Z 춤 · E 상호작용 · 🏬 별관 층 이동</p>
+      <p className="hint">방향키·WASD 이동 · Space 상호작용 · 😄 이모지(춤·박수) · 🏬 별관 룸 이동</p>
     </div>
   )
 }

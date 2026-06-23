@@ -30,7 +30,7 @@ test('룸 선택 → 별관 단일 맵 진입(온천/게임룸)', async ({ page 
   await pickRoom(page, '온천')
   await expect(page.locator('.place-btn.annex-btn.on')).toBeVisible() // 별관 진입
   await expect(page.locator('.zone-label', { hasText: '온천' })).toBeVisible()
-  expect(await page.locator('.tile.spaWater').count()).toBeGreaterThan(8)
+  await expect(page.locator('.furn-onsen')).toBeVisible() // 욕탕 오브젝트
 
   // 같은 맵 안에서 게임룸으로 개인 순간이동 (place는 그대로 annex)
   await openModal(page)
@@ -53,7 +53,7 @@ test('온천 입욕(E) → 잠김(노곤노곤) 활동 표시', async ({ page })
   await pickRoom(page, '온천')
   // 온천 입구(데크)가 곧 상호작용 반경 → 바로 힌트
   await expect(page.locator('.interact-hint')).toContainText('온천')
-  await page.keyboard.press('e')
+  await page.keyboard.press('Space')
   await expect(page.locator('.activity-overlay')).toContainText('노곤노곤')
   await expect(page.locator('.avatar.me.act-bath')).toBeVisible()
   // 이동하면 온천에서 빠져나온다(막혀서 못 나오던 버그 회귀 방지)
@@ -78,7 +78,7 @@ test('헬스룸 기구 상호작용(E) → 운동 상태', async ({ page }) => {
   await pickRoom(page, '헬스룸')
   // entry(22,6)가 러닝머신 옆 → 바로 힌트
   await expect(page.locator('.interact-hint')).toBeVisible()
-  await page.keyboard.press('e')
+  await page.keyboard.press('Space')
   await expect(page.locator('.activity-overlay')).toBeVisible()
 })
 
