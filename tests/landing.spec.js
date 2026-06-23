@@ -12,7 +12,7 @@ test('랜딩 페이지 → 입장', async ({ page }) => {
   await expect(page.locator('.lobby')).toBeVisible()
   await page.locator('.lobby-btn.primary').click()
   await expect(page.locator('.entry')).toBeVisible()
-  await expect(page.locator('.entry-card h1')).toContainText('ADX 타운')
+  await expect(page.locator('.entry-card h1')).toContainText('캐릭터를 꾸며 주세요')
   await expect(page).toHaveURL(/room=/) // 고유 방 URL 발급
 })
 
