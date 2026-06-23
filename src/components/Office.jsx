@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { TILE, PLACES, PLACE_LIST, isWall } from '../constants'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { TILE, PLACES, PLACE_LIST, isWall, STATUS, DEFAULT_STATUS } from '../constants'
 import { createRoom, createLobby } from '../lib/realtime'
 import { roomUrl } from '../lib/room'
 import { pickImage, toShareableSrc } from '../lib/image'
@@ -22,6 +22,10 @@ import { ScreenLightbox } from './office/ScreenLightbox'
 import { AiBot } from './office/AiBot'
 import { AiPanel } from './office/AiPanel'
 import { WelcomeNotice } from './office/WelcomeNotice'
+import ThemeSwitcher from './ThemeSwitcher'
+import { MiniMap } from './office/MiniMap'
+import MembersPanel from './office/MembersPanel'
+import Confetti from './office/Confetti'
 
 // 방 ID는 URL ?room=... 로 지정 가능(없으면 main). 여러 방 분리/테스트 격리에 사용
 const URL_ROOM =
@@ -47,6 +51,12 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   const [screen, setScreen] = useState(null) // 공유 화면 { photo, by }
   const [screenPreview, setScreenPreview] = useState(null) // 스크린 사진 확대 보기
   const [showNotice, setShowNotice] = useState(true) // 입장 환영 공지
+  const [myStatus, setMyStatus] = useState(DEFAULT_STATUS) // 프레즌스(자유/집중/회의/자리비움)
+  const [membersOpen, setMembersOpen] = useState(false) // 멤버/상태 패널
+  const [dancing, setDancing] = useState(false) // 내 아바타 춤(Z)
+  const [confetti, setConfetti] = useState(0) // 컨페티 버스트 key (0=없음)
+  const [stageSize, setStageSize] = useState({ w: 0, h: 0 }) // 미니맵 뷰포트 계산용
+  const danceTimer = useRef(null)
   const [chatOpen, setChatOpen] = useState(() => !isSmallScreen()) // 모바일은 기본 닫힘
   const [chatMin, setChatMin] = useState(false) // 모바일: 입력창만 보이게 최소화
   const [unread, setUnread] = useState(0) // 채팅 닫힌 동안 안 읽은 메시지 수
@@ -91,6 +101,46 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   const camRef = useRef(cam)
   camRef.current = cam
 
+  // 스테이지 크기 측정 (미니맵 뷰포트 사각형 계산)
+  useEffect(() => {
+    const el = stageRef.current
+    if (!el) return
+    const update = () => setStageSize({ w: el.clientWidth, h: el.clientHeight })
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // 프레즌스 상태 변경 → 내 상태에 실어 전파
+  const changeStatus = useCallback((s) => {
+    setMyStatus(s)
+    roomRef.current?.updateState({ status: s })
+  }, [])
+
+  // 컨페티 한 번 터뜨리기
+  const burstConfetti = useCallback(() => setConfetti(Date.now()), [])
+  useEffect(() => {
+    if (!confetti) return
+    const t = setTimeout(() => setConfetti(0), 2600)
+    return () => clearTimeout(t)
+  }, [confetti])
+
+  // 박수(F) — 컨페티 + 👏 이모트
+  const applaud = useCallback(() => {
+    burstConfetti()
+    roomRef.current?.sendEmote({ from: me.id, emoji: '👏' })
+  }, [burstConfetti, me.id])
+
+  // 춤(Z) — 내 아바타가 춤추고 💃 이모트 전파
+  const danceMe = useCallback(() => {
+    setDancing(true)
+    roomRef.current?.sendEmote({ from: me.id, emoji: '💃' })
+    clearTimeout(danceTimer.current)
+    danceTimer.current = setTimeout(() => setDancing(false), 3500)
+  }, [me.id])
+  useEffect(() => () => clearTimeout(danceTimer.current), [])
+
   // 근접 음성 — 훅으로 분리
   const { voiceOn, voicePeers, levels, toggleVoice, handleSignal: handleVoiceSignal } =
     useProximityVoice({ roomRef, me, pos, peers })
@@ -126,7 +176,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   useEffect(() => {
     const room = createRoom({
       roomId: ROOM_ID,
-      me: { ...me, ...PLACES.office.START },
+      me: { ...me, ...PLACES.office.START, status: DEFAULT_STATUS },
     })
     roomRef.current = room
     room.onRtc(handleVoiceSignal) // 근접 음성 시그널링 → useProximityVoice
@@ -420,13 +470,15 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         case 'ArrowDown': case 's': case 'S': moveBy(1, 0); break
         case 'ArrowLeft': case 'a': case 'A': moveBy(0, -1); break
         case 'ArrowRight': case 'd': case 'D': moveBy(0, 1); break
+        case 'f': case 'F': applaud(); break
+        case 'z': case 'Z': danceMe(); break
         default: return
       }
       e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [moveBy])
+  }, [moveBy, applaud, danceMe])
 
   const zoom = useCallback((dir) => {
     setView('follow')
@@ -530,11 +582,12 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     roomRef.current?.setBoard({ idx, text })
   }, [])
 
-  // 감정표현(이모트) 전송
+  // 감정표현(이모트) 전송 — 축하 이모지는 컨페티도 함께
   const sendEmote = useCallback((emoji) => {
     roomRef.current?.sendEmote({ from: me.id, emoji })
+    if (emoji === '👏' || emoji === '🎉' || emoji === '🙌') burstConfetti()
     setShowEmotes(false)
-  }, [me.id])
+  }, [me.id, burstConfetti])
 
   // 확성기 — 전체에게 전광판으로 전송
   const sendAnnounce = useCallback((text) => {
@@ -566,6 +619,17 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     if (p !== placeRef.current) roomRef.current?.setPlace(p)
   }, [])
 
+  // 멤버 로스터 (나 + 동료) / 현재 장소 라벨
+  const placeLabel = PLACE_LIST.find((pl) => pl.key === place)?.label || ''
+  const roster = useMemo(() => {
+    const mine = { id: me.id, face: me.avatar, name: me.nickname, status: myStatus, isMe: true }
+    const others = [...peers.entries()].map(([id, p]) => ({
+      id, face: p.avatar, name: p.nickname || '게스트', status: p.status || 'free',
+    }))
+    return [mine, ...others]
+  }, [me, myStatus, peers])
+  const nearCount = voiceOn ? voicePeers.size : 0
+
   return (
     <div className={'office' + (chatOpen ? ' chat-open' : '') + (chatOpen && chatMin ? ' chat-min' : '') + (rockMode ? ' rock-aim' : '')}>
       {showNotice && <WelcomeNotice me={me} onClose={() => setShowNotice(false)} />}
@@ -584,14 +648,20 @@ export default function Office({ me, roomId, roomName, onLeave }) {
           ))}
         </span>
         <span className="count">접속 {peers.size + 1}명</span>
+        <button className="status-pill" onClick={() => setMembersOpen((o) => !o)} title="내 상태 / 멤버">
+          <span className="dot" style={{ background: STATUS[myStatus].dot }} />
+          {STATUS[myStatus].label}
+        </button>
         <span className="zoom-ctrl">
           <button onClick={() => zoom(-1)} disabled={view === 'follow' && zoomIdx === 0} aria-label="축소">−</button>
           <button onClick={() => zoom(1)} disabled={view === 'follow' && zoomIdx === ZOOM_STEPS.length - 1} aria-label="확대">＋</button>
         </span>
+        <button className="members-btn" onClick={() => setMembersOpen((o) => !o)}>👥 멤버</button>
         <button className="invite-btn" onClick={shareLink} title="초대 링크 복사">
           {shareCopied ? '✅ 복사됨' : '🔗 초대'}
         </button>
         <button className="notice-btn" onClick={() => setShowNotice(true)}>📢 공지</button>
+        <ThemeSwitcher variant="inline" />
         <button className="leave-btn" onClick={onLeave}>나가기</button>
       </header>
 
@@ -664,7 +734,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
               onAddStroke={addStroke}
               onClearDraw={clearStrokes}
             />
-            <Avatar state={{ ...me, ...pos }} isMe bubble={bubbles[me.id]?.text} emote={emotes[me.id]} voice={voiceOn} level={voiceOn ? levels.self : 0} stunned={!!stunned[me.id]} />
+            <Avatar state={{ ...me, ...pos, status: myStatus }} isMe bubble={bubbles[me.id]?.text} emote={emotes[me.id]} voice={voiceOn} level={voiceOn ? levels.self : 0} stunned={!!stunned[me.id]} dancing={dancing} />
             {[...peers.entries()].map(([id, p]) => (
               <Avatar key={id} state={p} bubble={bubbles[id]?.text} emote={emotes[id]} voice={voicePeers.has(id)} level={levels.peers[id] || 0} stunned={!!stunned[id]} />
             ))}
@@ -693,6 +763,30 @@ export default function Office({ me, roomId, roomName, onLeave }) {
             )}
           </div>
           <EmoteBar onPick={sendEmote} />
+
+          {nearCount > 0 && (
+            <div className="near-chip">🔊 근처 {nearCount}명 · 음성 연결됨</div>
+          )}
+
+          <MiniMap
+            place={P}
+            mePos={pos}
+            meColor={me.color}
+            peers={peers}
+            cam={cam}
+            stageW={stageSize.w}
+            stageH={stageSize.h}
+          />
+
+          {membersOpen && (
+            <MembersPanel
+              roster={roster}
+              myStatus={myStatus}
+              onStatus={changeStatus}
+              placeLabel={placeLabel}
+              onClose={() => setMembersOpen(false)}
+            />
+          )}
         </div>
 
         <Chat
@@ -744,7 +838,9 @@ export default function Office({ me, roomId, roomName, onLeave }) {
 
       <DPad onMove={moveBy} />
 
-      <p className="hint">방향키·WASD(또는 화면 버튼) 이동 · 📺 스크린 클릭해서 사진 공유</p>
+      {confetti ? <Confetti key={confetti} /> : null}
+
+      <p className="hint">방향키·WASD 이동 · F 박수 · Z 춤 · 📺 스크린 클릭해서 사진 공유</p>
     </div>
   )
 }

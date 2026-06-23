@@ -140,3 +140,13 @@ export const COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e',
   '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899',
 ]
+
+// 프레즌스 상태 (자유/집중/회의/자리비움) — 점 색은 테마 무관 고정 토큰
+export const STATUS = {
+  free: { label: '자유', dot: 'var(--st-free)' },
+  focus: { label: '집중', dot: 'var(--st-focus)' },
+  meeting: { label: '회의 중', dot: 'var(--st-meeting)' },
+  away: { label: '자리비움', dot: 'var(--st-away)' },
+}
+export const STATUS_ORDER = ['free', 'focus', 'meeting', 'away']
+export const DEFAULT_STATUS = 'free'
