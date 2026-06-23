@@ -28,6 +28,7 @@ import { MiniMap } from './office/MiniMap'
 import MembersPanel from './office/MembersPanel'
 import Confetti from './office/Confetti'
 import { Furniture } from './office/Furniture'
+import { RoomTints } from './office/RoomTints'
 import { AnnexDynamicLayer } from './office/AnnexDynamicLayer'
 import AnnexFloorModal from './office/AnnexFloorModal'
 import InteractionHint from './office/InteractionHint'
@@ -868,6 +869,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
               transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.scale})`,
             }}
           >
+            <RoomTints tints={P.TINTS} />
             <MapFloor place={P} />
             <Furniture objects={P.OBJECTS} />
             <ZoneLabels zones={P.ZONES} />

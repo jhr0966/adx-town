@@ -1965,7 +1965,15 @@ button.chat-min { display: none; }
 .tile.annexFloor { background: transparent; }
 /* 방 출입구 — 밝은 문턱 */
 .tile.doorway { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
-/* 방별 바닥 틴트 — 부드러운 대각 해치 */
+/* 방 바닥 색 — 방 전체를 덮는 배경 레이어(타일이 아니라서 장식과 이질감 없음) */
+.room-tint { position: absolute; z-index: 0; border-radius: 10px; pointer-events: none; }
+.rt-green { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 11px, color-mix(in srgb, #6fae54 9%, transparent) 11px 22px); }
+.rt-tan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 12%, transparent) 0 11px, color-mix(in srgb, var(--accent) 6%, transparent) 11px 22px); }
+.rt-peach { background: repeating-linear-gradient(45deg, color-mix(in srgb, #f0936b 14%, transparent) 0 11px, color-mix(in srgb, #f0936b 7%, transparent) 11px 22px); }
+.rt-purple { background: repeating-linear-gradient(45deg, color-mix(in srgb, #9a7bd6 17%, transparent) 0 11px, color-mix(in srgb, #9a7bd6 9%, transparent) 11px 22px); }
+.rt-lav { background: repeating-linear-gradient(45deg, color-mix(in srgb, #b58fd1 16%, transparent) 0 11px, color-mix(in srgb, #b58fd1 8%, transparent) 11px 22px); }
+
+/* 방별 바닥 틴트(구 타일, 미사용) */
 .tile.flrGreen { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 10px, color-mix(in srgb, #6fae54 9%, transparent) 10px 20px); }
 .tile.flrTan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 11%, transparent) 0 10px, color-mix(in srgb, var(--accent) 6%, transparent) 10px 20px); }
 .tile.flrPeach { background: repeating-linear-gradient(45deg, color-mix(in srgb, #f0936b 13%, transparent) 0 10px, color-mix(in srgb, #f0936b 7%, transparent) 10px 20px); }
