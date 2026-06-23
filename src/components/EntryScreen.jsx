@@ -39,8 +39,12 @@ export default function EntryScreen({ onEnter, roomId, roomName, onBack }) {
   return (
     <div className="entry">
       <form className="entry-card" onSubmit={submit}>
-        <h1>🏢 ADX 타운 입장</h1>
-        {roomId && <div className="entry-room">방: <b>{roomName || prettyRoomName(roomId)}</b></div>}
+        <div className="entry-preview">
+          <div className="ep-pad" style={{ background: color }} />
+          <div className="ep-face">{avatar}</div>
+        </div>
+        <h1>캐릭터를 꾸며 주세요</h1>
+        {roomId && <div className="entry-room">입장할 방 · <b>{roomName || prettyRoomName(roomId)}</b></div>}
 
         <label className="field">
           <span>닉네임</span>

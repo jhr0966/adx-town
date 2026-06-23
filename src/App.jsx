@@ -3,6 +3,7 @@ import Landing from './components/Landing'
 import RoomLobby from './components/RoomLobby'
 import EntryScreen from './components/EntryScreen'
 import Office from './components/Office'
+import ThemeSwitcher from './components/ThemeSwitcher'
 import { HAS_SUPABASE } from './lib/config'
 import { getRoomFromUrl, syncUrl } from './lib/room'
 
@@ -21,10 +22,12 @@ export default function App() {
     setPhase('entry')
   }
 
-  if (phase === 'landing') return <Landing onStart={() => setPhase('lobby')} />
-  if (phase === 'lobby') return <RoomLobby onPick={pickRoom} onBack={() => setPhase('landing')} />
-  if (!me) {
-    return (
+  const inOffice = phase !== 'landing' && phase !== 'lobby' && !!me
+  let screen
+  if (phase === 'landing') screen = <Landing onStart={() => setPhase('lobby')} />
+  else if (phase === 'lobby') screen = <RoomLobby onPick={pickRoom} onBack={() => setPhase('landing')} />
+  else if (!me) {
+    screen = (
       <EntryScreen
         roomId={room?.id}
         roomName={room?.name}
@@ -32,8 +35,16 @@ export default function App() {
         onBack={urlRoom ? null : () => setPhase('lobby')} // 공유 링크 입장 시엔 로비가 없음
       />
     )
+  } else {
+    screen = <Office me={me} roomId={room?.id} roomName={room?.name} onLeave={() => setMe(null)} />
   }
-  return <Office me={me} roomId={room?.id} roomName={room?.name} onLeave={() => setMe(null)} />
+
+  return (
+    <>
+      {!inOffice && <ThemeSwitcher variant="float" />}
+      {screen}
+    </>
+  )
 }
 
 export { HAS_SUPABASE }
