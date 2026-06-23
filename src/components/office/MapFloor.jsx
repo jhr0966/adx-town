@@ -17,6 +17,20 @@ const TILE_VIEW = {
   plant: { cls: 'plant', icon: '🪴' },
   screen: { cls: 'screen', icon: '' },
   wall: { cls: 'wall', icon: '' },
+  // ── 별관(別館) 타일 ──
+  annexfloor: { cls: 'annexfloor', icon: '' },
+  deck: { cls: 'deck', icon: '' },
+  water: { cls: 'water', icon: '' },
+  onsenrock: { cls: 'onsenrock', icon: '' },
+  lantern: { cls: 'lantern', icon: '🏮' },
+  arcade: { cls: 'arcade', icon: '🕹️' },
+  pool: { cls: 'pool', icon: '🎱' },
+  barstool: { cls: 'barstool', icon: '🪑' },
+  rug: { cls: 'rug', icon: '' },
+  sofa: { cls: 'sofa', icon: '' },
+  shelf: { cls: 'shelf', icon: '📚' },
+  bar: { cls: 'bar', icon: '' },
+  fountain: { cls: 'fountain', icon: '⛲' },
 }
 
 // 바닥/가구 타일. place 가 바뀔 때만 다시 그린다(메모).

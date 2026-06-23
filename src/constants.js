@@ -112,17 +112,88 @@ function buildConference() {
   return { COLS, ROWS, tiles: g.tiles, START: { row: 18, col: 14 }, SCREEN, ZONES, BOARDS: [] }
 }
 
+// ── 3) 별관(別館) ── 온천·게임존·휴게실·카페바를 십자 복도로 잇는 넓은 휴식 공간
+function buildAnnex() {
+  const COLS = 48, ROWS = 30
+  const g = makeGrid(COLS, ROWS)
+  g.rect(0, 0, ROWS - 1, COLS - 1, 'annexfloor')
+  // 테두리 벽
+  for (let c = 0; c < COLS; c++) { g.set(0, c, 'wall'); g.set(ROWS - 1, c, 'wall') }
+  for (let r = 0; r < ROWS; r++) { g.set(r, 0, 'wall'); g.set(r, COLS - 1, 'wall') }
+  // 십자(十) 복도 — 네 구역을 잇는 통로
+  g.rect(14, 1, 15, COLS - 2, 'corridor')
+  g.rect(1, 23, ROWS - 2, 24, 'corridor')
+
+  // ── ♨️ 온천 (좌상) — 나무 데크 + 바위 테두리 + 물 + 청사초롱 ──
+  g.rect(3, 3, 12, 16, 'deck')
+  g.rect(4, 4, 11, 15, 'onsenrock')
+  g.rect(5, 5, 10, 14, 'water')
+  for (const [r, c] of [[3, 3], [3, 16], [12, 3], [12, 16]]) g.set(r, c, 'lantern')
+  g.set(7, 18, 'plant'); g.set(10, 18, 'plant')
+
+  // ── 🎮 게임존 (우상) — 아케이드 + 당구대 + 대형 TV ──
+  for (const c of [27, 29, 31, 33]) g.set(3, c, 'arcade')
+  g.rect(7, 28, 8, 32, 'pool')
+  for (const c of [28, 30, 32]) g.set(10, c, 'barstool')
+  g.rect(11, 27, 12, 35, 'rug')
+  g.set(6, 45, 'plant'); g.set(12, 45, 'plant')
+  const SCREEN = { row: 1, col: 38, w: 8, h: 4 } // 대형 TV(스크린 공유)
+
+  // ── 🛋️ 휴게실 (좌하) — ㄷ자 소파 + 러그 + 책장 ──
+  for (let c = 4; c <= 9; c++) g.set(16, c, 'shelf')
+  g.rect(18, 3, 26, 18, 'rug')
+  for (let c = 5; c <= 14; c++) g.set(19, c, 'sofa')
+  for (let r = 20; r <= 24; r++) { g.set(r, 5, 'sofa'); g.set(r, 14, 'sofa') }
+  g.set(22, 9, 'rtable'); g.set(22, 10, 'rtable')
+  g.set(26, 6, 'plant'); g.set(26, 16, 'plant')
+
+  // ── ☕ 카페·바 (우하) — 긴 바 카운터 + 스툴 + 카페 테이블 ──
+  g.rect(18, 28, 18, 42, 'bar')
+  for (let c = 28; c <= 42; c += 2) g.set(19, c, 'barstool')
+  for (const [r, c] of [[23, 30], [23, 38], [26, 31], [26, 39]]) { g.set(r, c, 'rtable'); g.set(r, c + 1, 'chair') }
+  g.set(20, 45, 'plant'); g.set(27, 45, 'plant')
+
+  // ── ⛲ 중앙 분수 ──
+  g.set(14, 23, 'fountain'); g.set(14, 24, 'fountain')
+  g.set(15, 23, 'fountain'); g.set(15, 24, 'fountain')
+
+  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
+
+  const ZONES = [
+    { text: '♨️ 온천', row: 3.2, col: 8, big: true },
+    { text: '🎮 게임존', row: 1.2, col: 27, big: true },
+    { text: '🛋️ 휴게실', row: 16.4, col: 8, big: true },
+    { text: '☕ 카페 · 바', row: 16.4, col: 33, big: true },
+    { text: '⛲ 중앙정원', row: 12.6, col: 21.6, small: true },
+  ]
+
+  // 분위기 파티클 — 온천 김(steam) + 게임존 반짝임(spark)
+  const DECOR = [
+    { kind: 'steam', row: 5, col: 6 }, { kind: 'steam', row: 6, col: 9 },
+    { kind: 'steam', row: 5, col: 12 }, { kind: 'steam', row: 8, col: 7 },
+    { kind: 'steam', row: 9, col: 11 }, { kind: 'steam', row: 7, col: 13 },
+    { kind: 'spark', row: 2, col: 40 }, { kind: 'spark', row: 4, col: 44 },
+    { kind: 'spark', row: 3, col: 37 }, { kind: 'spark', row: 2, col: 45 },
+  ]
+
+  return { COLS, ROWS, tiles: g.tiles, START: { row: 22, col: 23 }, SCREEN, ZONES, BOARDS: [], DECOR }
+}
+
 export const PLACES = {
   office: buildOffice(),
   conference: buildConference(),
+  annex: buildAnnex(),
 }
 export const PLACE_LIST = [
   { key: 'office', label: '🏢 사무실' },
   { key: 'conference', label: '🎤 대회의실' },
+  { key: 'annex', label: '🏨 별관' },
 ]
 
 const BLOCKING = new Set([
   'wall', 'partition', 'deskpc', 'mgrdesk', 'mtable', 'rtable', 'board', 'screen', 'plant',
+  // 별관 지형/가구
+  'water', 'onsenrock', 'lantern', 'arcade', 'pool', 'shelf', 'bar', 'sofa', 'fountain',
 ])
 
 export function tileType(place, row, col) {

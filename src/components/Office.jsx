@@ -26,6 +26,7 @@ import ThemeSwitcher from './ThemeSwitcher'
 import { MiniMap } from './office/MiniMap'
 import MembersPanel from './office/MembersPanel'
 import Confetti from './office/Confetti'
+import { Decorations } from './office/Decorations'
 
 // 방 ID는 URL ?room=... 로 지정 가능(없으면 main). 여러 방 분리/테스트 격리에 사용
 const URL_ROOM =
@@ -720,6 +721,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
           >
             <MapFloor place={P} />
             <ZoneLabels zones={P.ZONES} />
+            <Decorations decor={P.DECOR} />
             {P.BOARDS.map((b) => (
               <Whiteboard key={b.idx} board={b} text={boards[b.idx] || ''} onSave={saveBoard} />
             ))}
@@ -765,7 +767,10 @@ export default function Office({ me, roomId, roomName, onLeave }) {
           <EmoteBar onPick={sendEmote} />
 
           {nearCount > 0 && (
-            <div className="near-chip">🔊 근처 {nearCount}명 · 음성 연결됨</div>
+            <div className="near-chip">
+              <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
+              근처 {nearCount}명 · 음성 연결됨
+            </div>
           )}
 
           <MiniMap
