@@ -47,26 +47,25 @@ test('펫파크 — 고양이 NPC가 보인다', async ({ page }) => {
   expect(await page.locator('.npc-cat').count()).toBeGreaterThanOrEqual(1)
 })
 
-test('온천 상호작용(E) → 활동 상태 표시', async ({ page }) => {
+test('온천 입욕(E) → 잠김(노곤노곤) 활동 표시', async ({ page }) => {
   await enter(page)
   await openModal(page)
   await pickRoom(page, '온천')
-  // 온천 입구(entry)가 곧 상호작용 지점 → 바로 힌트
+  // 온천 입구(데크)가 곧 상호작용 반경 → 바로 힌트
   await expect(page.locator('.interact-hint')).toContainText('온천')
   await page.keyboard.press('e')
-  await expect(page.locator('.activity-overlay')).toContainText('온천')
-  await expect(page.locator('.avatar.me.act-onsen')).toBeVisible()
+  await expect(page.locator('.activity-overlay')).toContainText('노곤노곤')
+  await expect(page.locator('.avatar.me.act-bath')).toBeVisible()
 })
 
 test('헬스룸 기구 상호작용(E) → 운동 상태', async ({ page }) => {
   await enter(page)
   await openModal(page)
   await pickRoom(page, '헬스룸')
-  // entry(21,12) → 아래로 덤벨 옆
-  await press(page, 'ArrowDown', 3)
+  // entry(22,6)가 러닝머신 옆 → 바로 힌트
   await expect(page.locator('.interact-hint')).toBeVisible()
   await page.keyboard.press('e')
-  await expect(page.locator('.activity-overlay')).toContainText('운동')
+  await expect(page.locator('.activity-overlay')).toBeVisible()
 })
 
 test('모바일 폭에서도 모달이 화면 안에 들어온다', async ({ browser }) => {

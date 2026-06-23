@@ -123,64 +123,72 @@ function buildAnnex() {
     for (let r = 19; r <= ROWS - 2; r++) g.set(r, c, 'wall')
   }
 
-  // ── 🛋️ 휴게실 (좌상) ──
+  // ── 🛋️ 휴게실 ── TV·ㄷ소파·책장·주크박스
   g.rect(3, 2, 13, 13, 'rug')
-  for (let c = 4; c <= 11; c++) g.set(2, c, 'shelf')
-  for (let c = 4; c <= 10; c++) g.set(5, c, 'sofa')
-  for (let r = 6; r <= 10; r++) { g.set(r, 4, 'sofa'); g.set(r, 10, 'sofa') }
-  g.set(8, 7, 'rtable'); g.set(8, 8, 'rtable')
-  g.set(13, 2, 'plant'); g.set(13, 13, 'plant')
+  g.set(2, 4, 'tv'); g.set(2, 5, 'tv')
+  for (let c = 8; c <= 11; c++) g.set(2, c, 'shelf')
+  for (let c = 4; c <= 10; c++) g.set(6, c, 'sofa')
+  for (let r = 7; r <= 11; r++) { g.set(r, 4, 'sofa'); g.set(r, 10, 'sofa') }
+  g.set(9, 7, 'rtable'); g.set(9, 8, 'rtable')
+  g.set(12, 12, 'jukebox')
+  g.set(2, 13, 'plant'); g.set(13, 2, 'plant'); g.set(13, 13, 'plant')
 
-  // ── 🐾 펫파크 ──
+  // ── 🐾 펫파크 ── 잔디·캣타워·장난감·물그릇
   g.rect(2, 16, 13, 29, 'grass')
-  g.set(3, 18, 'catTower'); g.set(3, 27, 'catTower')
-  for (const [r, c] of [[7, 20], [10, 25], [6, 24]]) g.set(r, c, 'petToy')
-  g.set(11, 17, 'rtable')
-  g.set(13, 28, 'plant')
+  g.set(3, 18, 'catTower'); g.set(3, 27, 'catTower'); g.set(9, 17, 'catTower')
+  for (const [r, c] of [[7, 21], [11, 24], [5, 25], [10, 19]]) g.set(r, c, 'petToy')
+  g.set(12, 28, 'rtable')
+  for (const [r, c] of [[2, 16], [2, 29], [13, 16], [13, 29]]) g.set(r, c, 'plant')
 
-  // ── 🏕️ 캠핑존 ──
+  // ── 🏕️ 캠핑존 ── 캠프파이어·텐트·캠핑의자·등롱
   g.rect(2, 31, 13, 44, 'grass')
-  g.set(7, 37, 'campfire')
-  for (const [r, c] of [[6, 35], [6, 39], [9, 37]]) g.set(r, c, 'campChair')
+  g.set(8, 37, 'campfire')
+  for (const [r, c] of [[7, 35], [7, 39], [10, 36], [10, 38]]) g.set(r, c, 'campChair')
   g.set(4, 33, 'tent'); g.set(4, 41, 'tent')
-  g.set(9, 33, 'foodTable')
-  g.set(2, 31, 'lantern'); g.set(2, 44, 'lantern')
-  g.set(13, 38, 'plant')
+  g.set(11, 33, 'foodTable')
+  for (const [r, c] of [[2, 32], [2, 43], [13, 32], [13, 43]]) g.set(r, c, 'lantern')
 
-  // ── 🍽️ 식당 ──
-  g.rect(2, 46, 2, 57, 'cafeCounter')
-  for (const [r, c] of [[5, 48], [5, 53], [8, 48], [8, 53]]) { g.set(r, c, 'foodTable'); g.set(r + 1, c, 'chair') }
-  for (const c of [48, 51, 54]) g.set(3, c, 'barstool')
+  // ── 🍽️ 식당 ── 배식대 + 식탁(양옆 의자) + 스툴
+  g.rect(2, 46, 3, 57, 'cafeCounter')
+  for (const [r, c] of [[6, 48], [6, 52], [6, 56], [9, 48], [9, 52], [9, 56]]) {
+    g.set(r, c, 'foodTable'); g.set(r - 1, c, 'chair'); g.set(r + 1, c, 'chair')
+  }
+  for (const c of [48, 51, 54]) g.set(4, c, 'barstool')
   g.set(13, 46, 'plant'); g.set(13, 57, 'plant')
 
-  // ── 🏋️ 헬스룸 (좌하) ──
+  // ── 🏋️ 헬스룸 ── 러닝·사이클·벤치·덤벨·요가·정수기·거울
   for (const c of [3, 6, 9]) g.set(20, c, 'treadmill')
-  for (const c of [3, 6, 9]) g.set(24, c, 'bike')
+  for (const c of [3, 6]) g.set(24, c, 'bike')
   g.set(28, 4, 'bench'); g.set(28, 7, 'bench')
-  g.set(24, 12, 'dumbbell'); g.set(26, 12, 'dumbbell')
-  g.rect(29, 9, 31, 13, 'yoga')
+  for (const r of [24, 26, 28]) g.set(r, 11, 'dumbbell')
+  g.rect(30, 9, 31, 13, 'yoga')
+  g.set(20, 12, 'watercooler')
+  g.set(20, 2, 'mirror'); g.set(20, 3, 'mirror')
   g.set(31, 2, 'plant')
 
-  // ── ♨️ 온천 ──
-  g.rect(21, 18, 29, 26, 'deck')
-  g.rect(22, 19, 28, 25, 'onsenrock')
-  g.rect(23, 20, 27, 24, 'spaWater')
-  for (const [r, c] of [[20, 18], [20, 26], [30, 18], [30, 26]]) g.set(r, c, 'lantern')
-  g.set(31, 28, 'plant')
+  // ── ♨️ 온천 ── 나무 데크 + 바위 테두리 + 대나무 + 등롱 + 상시 김
+  g.rect(20, 16, 31, 29, 'deck')
+  g.rect(21, 18, 30, 27, 'onsenrock')
+  g.rect(22, 19, 29, 26, 'spaWater')
+  for (const [r, c] of [[20, 18], [20, 27], [31, 18], [31, 27]]) g.set(r, c, 'bamboo')
+  for (const [r, c] of [[20, 21], [20, 24], [31, 21], [31, 24]]) g.set(r, c, 'lantern')
+  g.set(31, 16, 'towel'); g.set(20, 16, 'plant'); g.set(20, 29, 'plant'); g.set(31, 29, 'plant')
 
-  // ── 🎮 게임룸 ──
-  for (const c of [33, 35, 37]) g.set(20, c, 'arcade')
-  g.rect(24, 33, 25, 38, 'pool')
-  g.rect(28, 33, 29, 37, 'rug')
+  // ── 🎮 게임룸 ── 아케이드·큰 당구대·다트·빈백·방탈출·리듬
+  for (const c of [32, 34, 36]) g.set(20, c, 'arcade')
+  g.rect(24, 33, 26, 39, 'pool')
+  g.set(20, 42, 'dartboard')
+  g.rect(29, 40, 30, 43, 'rug')
+  g.set(31, 32, 'beanbag'); g.set(31, 33, 'beanbag')
   g.set(21, 42, 'escapeWall'); g.set(22, 42, 'keypad'); g.set(23, 42, 'escapeWall')
-  g.set(31, 32, 'plant')
 
-  // ── 🎤 노래방 ──
-  const SCREEN = { row: 20, col: 48, w: 7, h: 4 }
+  // ── 🎤 노래방 ── 대형 화면 + 미러볼 + 무대 + 스툴
+  const SCREEN = { row: 20, col: 48, w: 8, h: 4 }
   g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
+  g.set(25, 51, 'disco')
   g.rect(27, 47, 29, 56, 'rug')
   for (const c of [48, 51, 54]) g.set(31, c, 'barstool')
-  g.set(25, 57, 'plant')
+  g.set(20, 57, 'plant'); g.set(31, 57, 'plant')
 
   const ZONES = [
     { text: '🛋️ 휴게실', row: 1.2, col: 5, big: true },
@@ -193,38 +201,57 @@ function buildAnnex() {
     { text: '🎤 노래방', row: 19.2, col: 50, big: true },
   ]
   const DECOR = [
-    { kind: 'steam', row: 24, col: 21 }, { kind: 'steam', row: 25, col: 23 }, { kind: 'steam', row: 23, col: 22 },
-    { kind: 'ember', row: 7, col: 37 }, { kind: 'ember', row: 6, col: 37 },
-    { kind: 'spark', row: 22, col: 50 }, { kind: 'spark', row: 24, col: 54 }, { kind: 'spark', row: 5, col: 37 },
+    // 온천 상시 김
+    { kind: 'steam', row: 23, col: 20 }, { kind: 'steam', row: 24, col: 22 }, { kind: 'steam', row: 22, col: 24 },
+    { kind: 'steam', row: 26, col: 21 }, { kind: 'steam', row: 25, col: 25 }, { kind: 'steam', row: 27, col: 23 },
+    { kind: 'steam', row: 28, col: 20 }, { kind: 'steam', row: 24, col: 26 },
+    // 캠프파이어 불씨
+    { kind: 'ember', row: 8, col: 37 }, { kind: 'ember', row: 7, col: 37 }, { kind: 'ember', row: 6, col: 37 },
+    // 노래방 미러볼 반짝임
+    { kind: 'spark', row: 23, col: 50 }, { kind: 'spark', row: 24, col: 53 }, { kind: 'spark', row: 22, col: 52 },
   ]
-  const PETS = { count: 4, r0: 3, c0: 16, r1: 13, c1: 29 }
+  const PETS = { count: 5, r0: 3, c0: 16, r1: 13, c1: 29 }
+
+  // 온천 입욕 좌석 — 탕 안쪽 가장자리(rim) 물 타일. 진입 시 빈 자리 랜덤 착석.
+  const ONSEN_SEATS = [
+    { row: 22, col: 19 }, { row: 22, col: 21 }, { row: 22, col: 23 }, { row: 22, col: 25 },
+    { row: 29, col: 20 }, { row: 29, col: 22 }, { row: 29, col: 24 }, { row: 29, col: 26 },
+    { row: 24, col: 19 }, { row: 26, col: 19 }, { row: 28, col: 19 },
+    { row: 23, col: 26 }, { row: 25, col: 26 }, { row: 27, col: 26 },
+  ]
 
   const INTERACTIONS = [
-    // 휴게실
-    { id: 'lounge-sit', label: 'E: 소파에 앉기', type: 'sit', row: 11, col: 7, radius: 2.2, target: { row: 7, col: 7 }, activity: { type: 'sit', label: '휴게실에서 쉬는 중 🛋️' } },
-    { id: 'book', label: 'E: 책 읽기', type: 'toast', row: 3, col: 7, radius: 2.0, message: '베스트셀러 한 권을 집어들었어요 📚' },
-    // 펫파크
-    { id: 'pet', label: 'E: 고양이와 놀기', type: 'toast', row: 8, col: 22, radius: 2.6, message: '고양이가 골골거리며 다가옵니다 🐱💕' },
-    // 캠핑존
-    { id: 'campfire', label: 'E: 불멍 즐기기', type: 'sit', row: 10, col: 37, radius: 2.2, target: { row: 8, col: 37 }, activity: { type: 'campfire', label: '불멍 중… 🔥' } },
-    { id: 'marsh', label: 'E: 마시멜로 굽기', type: 'toast', row: 10, col: 33, radius: 2.0, message: '마시멜로가 노릇노릇 구워집니다 🔥🍡' },
-    // 식당
-    { id: 'order', label: 'E: 음식 주문', type: 'toast', row: 3, col: 51, radius: 2.4, message: '라면과 김밥이 나왔습니다 🍜🍙' },
-    { id: 'diner-sit', label: 'E: 자리에 앉기', type: 'sit', row: 7, col: 48, radius: 1.8, target: { row: 6, col: 48 }, activity: { type: 'sit', label: '식당에서 식사 중 🍽️' } },
-    // 헬스룸
-    { id: 'treadmill', label: 'E: 러닝머신', type: 'gym', row: 21, col: 6, radius: 1.8, target: { row: 20, col: 6 }, activity: { type: 'gym-treadmill', label: '러닝머신 운동 중 🏃' } },
-    { id: 'bike', label: 'E: 사이클', type: 'gym', row: 25, col: 6, radius: 1.8, target: { row: 24, col: 6 }, activity: { type: 'gym-bike', label: '사이클 운동 중 🚴' } },
-    { id: 'bench', label: 'E: 벤치프레스', type: 'gym', row: 29, col: 5, radius: 1.8, target: { row: 28, col: 4 }, activity: { type: 'gym-bench', label: '벤치프레스 운동 중 💪' } },
-    { id: 'dumbbell', label: 'E: 덤벨 운동', type: 'gym', row: 25, col: 11, radius: 2.0, target: { row: 25, col: 11 }, activity: { type: 'gym-dumbbell', label: '덤벨 운동 중 💪' } },
-    { id: 'yoga', label: 'E: 요가·명상', type: 'gym', row: 30, col: 11, radius: 2.0, target: { row: 30, col: 11 }, activity: { type: 'yoga', label: '요가·명상 중 🧘' } },
-    // 온천
-    { id: 'onsen', label: 'E: 온천 즐기기', type: 'onsen', row: 30, col: 22, radius: 2.6, target: { row: 25, col: 22 }, activity: { type: 'onsen', label: '온천 즐기는 중 ♨️' } },
-    // 게임룸
-    { id: 'arcade', label: 'E: 게임 시작', type: 'minigame', row: 21, col: 35, radius: 2.2 },
-    { id: 'pool', label: 'E: 당구 치기', type: 'toast', row: 26, col: 35, radius: 2.2, message: '🎱 나이스 샷! 8번 공 인!' },
-    { id: 'rhythm', label: 'E: 리듬 발판에서 춤추기', type: 'dance', row: 30, col: 35, radius: 1.8 },
-    { id: 'escape', label: 'E: 방탈출 도전', type: 'escape', row: 22, col: 40, radius: 2.2 },
-    // 노래방
+    // 🛋️ 휴게실
+    { id: 'lounge-sit', label: 'E: 소파에 앉기', type: 'sit', row: 12, col: 7, radius: 2.2, target: { row: 9, col: 7 }, activity: { type: 'relax', label: '😌 휴식 중' } },
+    { id: 'tv', label: 'E: TV 보기', type: 'toast', row: 4, col: 5, radius: 2.2, message: '📺 재밌는 방송이 한창입니다' },
+    { id: 'book', label: 'E: 책 읽기', type: 'toast', row: 3, col: 9, radius: 2.0, message: '📚 베스트셀러 한 권을 집어들었어요' },
+    { id: 'jukebox', label: 'E: 음악 켜기', type: 'toast', row: 12, col: 11, radius: 1.8, message: '🎵 잔잔한 로파이가 흘러나옵니다' },
+    // 🐾 펫파크
+    { id: 'pet', label: 'E: 고양이와 놀기', type: 'toast', row: 8, col: 22, radius: 3.0, message: '🐱💕 고양이가 골골거리며 다가옵니다' },
+    // 🏕️ 캠핑존
+    { id: 'campfire', label: 'E: 불멍 즐기기', type: 'sit', row: 11, col: 37, radius: 2.2, target: { row: 9, col: 37 }, activity: { type: 'campfire', label: '🔥 불멍 중…' } },
+    { id: 'marsh', label: 'E: 마시멜로 굽기', type: 'toast', row: 11, col: 34, radius: 1.8, message: '🔥🍡 마시멜로가 노릇노릇 구워집니다' },
+    // 🍽️ 식당
+    { id: 'order', label: 'E: 음식 주문', type: 'toast', row: 4, col: 51, radius: 2.4, message: '🍜🍙 라면과 김밥이 나왔습니다' },
+    { id: 'diner-sit', label: 'E: 식탁에 앉기', type: 'sit', row: 8, col: 52, radius: 1.8, target: { row: 7, col: 52 }, activity: { type: 'eat', label: '🍽️ 식사 중' } },
+    { id: 'dessert', label: 'E: 디저트 고르기', type: 'toast', row: 11, col: 56, radius: 2.0, message: '🧁 달콤한 디저트 한 입!' },
+    // 🏋️ 헬스룸
+    { id: 'treadmill', label: 'E: 러닝머신', type: 'gym', row: 21, col: 6, radius: 1.8, target: { row: 20, col: 6 }, activity: { type: 'gym-treadmill', label: '🏃 달리는 중' } },
+    { id: 'bike', label: 'E: 사이클', type: 'gym', row: 25, col: 6, radius: 1.8, target: { row: 24, col: 6 }, activity: { type: 'gym-bike', label: '🚴 사이클' } },
+    { id: 'bench', label: 'E: 벤치프레스', type: 'gym', row: 29, col: 5, radius: 1.8, target: { row: 28, col: 4 }, activity: { type: 'gym-bench', label: '💪 운동 중' } },
+    { id: 'dumbbell', label: 'E: 덤벨 운동', type: 'gym', row: 25, col: 12, radius: 1.8, target: { row: 25, col: 12 }, activity: { type: 'gym-dumbbell', label: '💪 운동 중' } },
+    { id: 'yoga', label: 'E: 요가·명상', type: 'gym', row: 30, col: 11, radius: 2.0, target: { row: 30, col: 11 }, activity: { type: 'yoga', label: '🧘 요가 중' } },
+    { id: 'water', label: 'E: 물 마시기', type: 'toast', row: 21, col: 12, radius: 1.6, message: '💧 수분 충전 완료!' },
+    // ♨️ 온천 — rim 랜덤 착석 + 잠김 + 수건 + 김
+    { id: 'onsen', label: 'E: 온천 입욕', type: 'onsen', row: 25, col: 22, radius: 5, seats: ONSEN_SEATS, activity: { type: 'bath', label: '♨️ 노곤노곤' } },
+    { id: 'towel', label: 'E: 수건 챙기기', type: 'toast', row: 31, col: 17, radius: 1.6, message: '🧖 뽀송한 수건을 챙겼어요' },
+    // 🎮 게임룸
+    { id: 'arcade', label: 'E: 게임 시작', type: 'minigame', row: 21, col: 34, radius: 2.4 },
+    { id: 'pool', label: 'E: 당구 치기', type: 'toast', row: 27, col: 36, radius: 2.4, message: '🎱 나이스 샷! 8번 공 인!' },
+    { id: 'dart', label: 'E: 다트 던지기', type: 'toast', row: 21, col: 42, radius: 1.6, message: '🎯 불스아이 명중!' },
+    { id: 'rhythm', label: 'E: 리듬 발판에서 춤추기', type: 'dance', row: 30, col: 41, radius: 1.8 },
+    { id: 'escape', label: 'E: 방탈출 도전', type: 'escape', row: 22, col: 41, radius: 2.0 },
+    // 🎤 노래방
     { id: 'sing', label: 'E: 노래 부르기', type: 'dance', row: 28, col: 51, radius: 2.6 },
   ]
 
@@ -243,14 +270,14 @@ export const PLACE_LIST = [
 ]
 // 별관 방 메타 — 🏬 별관 버튼 → 룸 이동 모달. entry 로 내 위치만 개인 순간이동.
 export const ROOMS = [
-  { key: 'lounge', icon: '🛋️', label: '휴게실', desc: '소파·책·휴식', tags: ['소파', '책', '수다'], entry: { row: 13, col: 7 } },
-  { key: 'petpark', icon: '🐾', label: '펫파크', desc: '고양이·잔디', tags: ['고양이', '잔디', '힐링'], entry: { row: 12, col: 22 } },
+  { key: 'lounge', icon: '🛋️', label: '휴게실', desc: 'TV·소파·주크박스', tags: ['소파', 'TV', '음악'], entry: { row: 13, col: 7 } },
+  { key: 'petpark', icon: '🐾', label: '펫파크', desc: '고양이·잔디·장난감', tags: ['고양이', '잔디', '힐링'], entry: { row: 12, col: 22 } },
   { key: 'camp', icon: '🏕️', label: '캠핑존', desc: '불멍·텐트·마시멜로', tags: ['불멍', '텐트', '마시멜로'], entry: { row: 12, col: 37 } },
-  { key: 'diner', icon: '🍽️', label: '식당', desc: '주문·식사·수다', tags: ['주문', '식사', '수다'], entry: { row: 12, col: 51 } },
-  { key: 'gym', icon: '🏋️', label: '헬스룸', desc: '러닝·근력·요가', tags: ['러닝', '근력', '요가'], entry: { row: 21, col: 12 } },
-  { key: 'spa', icon: '♨️', label: '온천', desc: '온천·찜질·힐링', tags: ['온천', '찜질', '힐링'], entry: { row: 30, col: 22 } },
-  { key: 'game', icon: '🎮', label: '게임룸', desc: '미니게임·당구·방탈출', tags: ['미니게임', '당구', '방탈출'], entry: { row: 21, col: 39 } },
-  { key: 'karaoke', icon: '🎤', label: '노래방', desc: '노래·무대', tags: ['노래', '무대', '댄스'], entry: { row: 30, col: 51 } },
+  { key: 'diner', icon: '🍽️', label: '식당', desc: '주문·식사·디저트', tags: ['주문', '식사', '디저트'], entry: { row: 12, col: 51 } },
+  { key: 'gym', icon: '🏋️', label: '헬스룸', desc: '러닝·사이클·근력·요가', tags: ['러닝', '근력', '요가'], entry: { row: 22, col: 6 } },
+  { key: 'spa', icon: '♨️', label: '온천', desc: '입욕·수건·김', tags: ['입욕', '수건', '힐링'], entry: { row: 20, col: 22 } },
+  { key: 'game', icon: '🎮', label: '게임룸', desc: '아케이드·당구·다트·방탈출', tags: ['당구', '다트', '방탈출'], entry: { row: 21, col: 36 } },
+  { key: 'karaoke', icon: '🎤', label: '노래방', desc: '노래·무대·미러볼', tags: ['노래', '무대', '댄스'], entry: { row: 30, col: 51 } },
 ]
 export const isAnnex = (place) => place === 'annex'
 
@@ -260,6 +287,8 @@ const BLOCKING = new Set([
   'spaWater', 'onsenrock', 'lantern', 'arcade', 'escapeWall', 'keypad', 'cafeCounter',
   'foodTable', 'treadmill', 'bike', 'bench', 'dumbbell', 'catTower', 'campfire', 'tent',
   'barCounter', 'pool', 'sofa', 'shelf',
+  // 신규 장식/가구
+  'bamboo', 'towel', 'tv', 'jukebox', 'dartboard', 'watercooler', 'mirror',
 ])
 
 export function tileType(place, row, col) {

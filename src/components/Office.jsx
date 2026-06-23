@@ -461,7 +461,19 @@ export default function Office({ me, roomId, roomName, onLeave }) {
         break
       }
       default: { // sit / onsen / gym
-        moveTo(it.target)
+        let target = it.target
+        if (it.seats?.length) {
+          // 같은 층 동료가 앉은 자리 회피 후 빈 rim 좌석 랜덤
+          const taken = new Set(
+            [...peersRef.current.values()]
+              .filter((p) => (p.place || 'office') === placeRef.current)
+              .map((p) => `${p.row},${p.col}`),
+          )
+          const free = it.seats.filter((s) => !taken.has(`${s.row},${s.col}`))
+          const pool = free.length ? free : it.seats
+          target = pool[Math.floor(Math.random() * pool.length)]
+        }
+        moveTo(target)
         const a = it.activity || { type: it.type, label: it.label.replace(/^E:\s*/, '') }
         setActivity(a)
         broadcastAct(a)

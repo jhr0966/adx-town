@@ -4,7 +4,7 @@ import { TILE, STATUS } from '../../constants'
 // 아바타 — 말풍선/이모트/음성 게이지/프레즌스 상태 점 포함.
 // props 동일하면 리렌더 생략(메모). 알(콩) 배경 없이 이모지 + 발밑 색 그림자.
 // 활동별 머리 위 표시(아이콘). 없으면 클래스 애니메이션만.
-const ACT_ICON = { onsen: '🧖', lie: '😌', nap: '💤', campfire: '🔥' }
+const ACT_ICON = { bath: '🧖', onsen: '🧖', relax: '💤', lie: '😌', nap: '💤', eat: '🍚', campfire: '🔥' }
 
 export const Avatar = memo(function Avatar({ state, isMe, bubble, emote, voice, level = 0, stunned, dancing, activity }) {
   if (state.row == null || state.col == null) return null
