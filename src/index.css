@@ -1270,6 +1270,21 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
   box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
+/* 간결한 입장 안내 — 인사 + 아이콘 4개 */
+.notice-card.welcome { max-width: 380px; text-align: center; }
+.welcome-hi { font-family: 'Fredoka', sans-serif; font-size: 17px; color: var(--text); margin-bottom: 16px; }
+.welcome-hi b { color: var(--accent); }
+.welcome-face { font-size: 26px; vertical-align: middle; margin-right: 4px; }
+.welcome-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.welcome-step {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 14px 8px; border-radius: 14px;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.ws-icon { font-size: 26px; line-height: 1; }
+.ws-label { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--text); }
+.ws-desc { font-size: 11px; color: var(--muted); }
+
 /* 입·퇴장 시스템 메시지 */
 .msg-system {
   align-self: center;
