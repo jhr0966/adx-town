@@ -27,6 +27,7 @@ import ThemeSwitcher from './ThemeSwitcher'
 import { MiniMap } from './office/MiniMap'
 import MembersPanel from './office/MembersPanel'
 import Confetti from './office/Confetti'
+import { Furniture } from './office/Furniture'
 import { AnnexDynamicLayer } from './office/AnnexDynamicLayer'
 import AnnexFloorModal from './office/AnnexFloorModal'
 import InteractionHint from './office/InteractionHint'
@@ -136,11 +137,15 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   const myStatusRef = useRef(myStatus)
   myStatusRef.current = myStatus
 
-  // 활동 해제 — (낮잠 등) 상태 자동복구 + 동료에게 전파
+  // 활동 해제 — (낮잠 등) 상태 자동복구 + 동료에게 전파. 온천 등 exit 좌표 있으면 그 곳으로 빠져나옴.
   const clearActivity = useCallback(() => {
     const prev = activityRef.current
     if (!prev) return
     if (prev.prevStatus) changeStatus(prev.prevStatus)
+    if (prev.exit) {
+      setPos(prev.exit)
+      roomRef.current?.updateState({ row: prev.exit.row, col: prev.exit.col })
+    }
     setActivity(null)
     roomRef.current?.updateState({ activity: null })
   }, [changeStatus])
@@ -399,7 +404,11 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   // 키보드·D패드 이동 — 수동 이동은 자동 이동/활동을 취소
   const moveBy = useCallback((dr, dc) => {
     if (Date.now() < stunUntilRef.current) return // 기절 중 이동 불가
-    if (activityRef.current) clearActivity()
+    if (activityRef.current) {
+      const exiting = !!activityRef.current.exit // 온천 등: 한 번 누르면 빠져나옴
+      clearActivity()
+      if (exiting) return
+    }
     stopAuto()
     const cur = posRef.current
     stepTo(cur.row + dr, cur.col + dc)
@@ -408,7 +417,11 @@ export default function Office({ me, roomId, roomName, onLeave }) {
   // 클릭/탭한 칸으로 자동 이동 (길찾기)
   const goTo = useCallback((row, col) => {
     if (Date.now() < stunUntilRef.current) return // 기절 중 이동 불가
-    if (activityRef.current) clearActivity()
+    if (activityRef.current) {
+      const exiting = !!activityRef.current.exit
+      clearActivity()
+      if (exiting) return // 온천 등에서 먼저 빠져나옴
+    }
     const pl = PLACES[placeRef.current]
     const target = nearestWalkable(pl, row, col)
     if (!target) return
@@ -856,6 +869,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
             }}
           >
             <MapFloor place={P} />
+            <Furniture objects={P.OBJECTS} />
             <ZoneLabels zones={P.ZONES} />
             <AnnexDynamicLayer place={P} />
             {P.BOARDS.map((b) => (

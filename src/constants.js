@@ -156,10 +156,14 @@ function buildAnnex() {
   g.set(11, 33, 'foodTable')
   for (const [r, c] of [[2, 32], [2, 43], [13, 32], [13, 43]]) g.set(r, c, 'lantern')
 
-  // ── 🍽️ 식당 ── 배식대 + 식탁(양옆 의자) + 스툴
-  g.rect(2, 46, 3, 57, 'cafeCounter')
-  for (const [r, c] of [[6, 48], [6, 52], [6, 56], [9, 48], [9, 52], [9, 56]]) {
-    g.set(r, c, 'foodTable'); g.set(r - 1, c, 'chair'); g.set(r + 1, c, 'chair')
+  // ── 🍽️ 식당 ── 긴 배식대(오브젝트) + 2칸 식탁(오브젝트, 양옆 의자) + 스툴
+  g.rect(2, 46, 3, 57, 'cafeCounter') // 카운터 풋프린트 → OBJECTS 'counter'
+  const DINING = [[6, 48], [6, 53], [9, 48], [9, 53]]
+  const FOODS = ['🍜', '🍱', '🍣', '🍛']
+  for (const [r, c] of DINING) {
+    g.set(r, c, 'foodTable'); g.set(r, c + 1, 'foodTable')
+    g.set(r - 1, c, 'chair'); g.set(r + 1, c, 'chair')
+    g.set(r - 1, c + 1, 'chair'); g.set(r + 1, c + 1, 'chair')
   }
   for (const c of [48, 51, 54]) g.set(4, c, 'barstool')
   g.set(13, 46, 'plant'); g.set(13, 57, 'plant')
@@ -174,13 +178,11 @@ function buildAnnex() {
   g.set(20, 2, 'mirror'); g.set(20, 3, 'mirror')
   g.set(31, 2, 'plant')
 
-  // ── ♨️ 온천 ── 나무 데크 + 바위 테두리 + 대나무 + 등롱 + 상시 김
-  g.rect(20, 16, 31, 29, 'deck')
-  g.rect(21, 18, 30, 27, 'onsenrock')
-  g.rect(22, 19, 29, 26, 'spaWater')
-  for (const [r, c] of [[20, 18], [20, 27], [31, 18], [31, 27]]) g.set(r, c, 'bamboo')
-  for (const [r, c] of [[20, 21], [20, 24], [31, 21], [31, 24]]) g.set(r, c, 'lantern')
-  g.set(31, 16, 'towel'); g.set(20, 16, 'plant'); g.set(20, 29, 'plant'); g.set(31, 29, 'plant')
+  // ── ♨️ 온천 ── 큰 욕탕은 OBJECTS 'onsen'(나무 프레임+물)으로 그린다. 여긴 충돌+둘레 장식.
+  g.rect(21, 18, 30, 27, 'spaWater') // 욕탕 풋프린트(충돌, 비주얼은 투명)
+  for (const [r, c] of [[20, 17], [20, 28], [31, 17], [31, 28]]) g.set(r, c, 'bamboo')
+  for (const [r, c] of [[20, 21], [20, 24]]) g.set(r, c, 'lantern')
+  g.set(31, 18, 'towel'); g.set(20, 16, 'plant'); g.set(31, 29, 'plant')
 
   // ── 🎮 게임룸 ── 아케이드·큰 당구대·다트·빈백·방탈출·리듬
   for (const c of [32, 34, 36]) g.set(20, c, 'arcade')
@@ -241,8 +243,8 @@ function buildAnnex() {
     { id: 'marsh', label: 'E: 마시멜로 굽기', type: 'toast', row: 11, col: 34, radius: 1.8, message: '🔥🍡 마시멜로가 노릇노릇 구워집니다' },
     // 🍽️ 식당
     { id: 'order', label: 'E: 음식 주문', type: 'toast', row: 4, col: 51, radius: 2.4, message: '🍜🍙 라면과 김밥이 나왔습니다' },
-    { id: 'diner-sit', label: 'E: 식탁에 앉기', type: 'sit', row: 8, col: 52, radius: 1.8, target: { row: 7, col: 52 }, activity: { type: 'eat', label: '🍽️ 식사 중' } },
-    { id: 'dessert', label: 'E: 디저트 고르기', type: 'toast', row: 11, col: 56, radius: 2.0, message: '🧁 달콤한 디저트 한 입!' },
+    { id: 'diner-sit', label: 'E: 식탁에 앉기', type: 'sit', row: 8, col: 53, radius: 1.8, target: { row: 7, col: 53 }, activity: { type: 'eat', label: '🍽️ 식사 중' } },
+    { id: 'dessert', label: 'E: 디저트 고르기', type: 'toast', row: 11, col: 50, radius: 2.0, message: '🧁 달콤한 디저트 한 입!' },
     // 🏋️ 헬스룸
     { id: 'treadmill', label: 'E: 러닝머신', type: 'gym', row: 21, col: 6, radius: 1.8, target: { row: 20, col: 6 }, activity: { type: 'gym-treadmill', label: '🏃 달리는 중' } },
     { id: 'bike', label: 'E: 사이클', type: 'gym', row: 25, col: 6, radius: 1.8, target: { row: 24, col: 6 }, activity: { type: 'gym-bike', label: '🚴 사이클' } },
@@ -251,7 +253,7 @@ function buildAnnex() {
     { id: 'yoga', label: 'E: 요가·명상', type: 'gym', row: 30, col: 11, radius: 2.0, target: { row: 30, col: 11 }, activity: { type: 'yoga', label: '🧘 요가 중' } },
     { id: 'water', label: 'E: 물 마시기', type: 'toast', row: 21, col: 12, radius: 1.6, message: '💧 수분 충전 완료!' },
     // ♨️ 온천 — rim 랜덤 착석 + 잠김 + 수건 + 김
-    { id: 'onsen', label: 'E: 온천 입욕', type: 'onsen', row: 25, col: 22, radius: 5, seats: ONSEN_SEATS, activity: { type: 'bath', label: '♨️ 노곤노곤' } },
+    { id: 'onsen', label: 'E: 온천 입욕', type: 'onsen', row: 25, col: 22, radius: 5, seats: ONSEN_SEATS, activity: { type: 'bath', label: '♨️ 노곤노곤', exit: { row: 20, col: 22 } } },
     { id: 'towel', label: 'E: 수건 챙기기', type: 'toast', row: 31, col: 17, radius: 1.6, message: '🧖 뽀송한 수건을 챙겼어요' },
     // 🎮 게임룸
     { id: 'arcade', label: 'E: 게임 시작', type: 'minigame', row: 21, col: 34, radius: 2.4 },
@@ -263,7 +265,15 @@ function buildAnnex() {
     { id: 'sing', label: 'E: 노래 부르기', type: 'dance', row: 28, col: 51, radius: 2.6 },
   ]
 
-  return { COLS, ROWS, tiles: g.tiles, START: { row: 17, col: 29 }, SCREEN, ZONES, BOARDS: [], DECOR, PETS, INTERACTIONS }
+  // 큰 가구는 칸 격자가 아니라 이어진 사각으로 렌더(Furniture). 충돌은 위 타일이 담당.
+  const OBJECTS = [
+    { kind: 'onsen', row: 21, col: 18, w: 10, h: 10 },
+    { kind: 'pooltable', row: 24, col: 33, w: 7, h: 3 },
+    { kind: 'counter', row: 2, col: 46, w: 12, h: 2 },
+    ...DINING.map(([r, c], i) => ({ kind: 'table', row: r, col: c, w: 2, h: 1, emoji: FOODS[i % FOODS.length] })),
+  ]
+
+  return { COLS, ROWS, tiles: g.tiles, START: { row: 17, col: 29 }, SCREEN, ZONES, BOARDS: [], DECOR, PETS, INTERACTIONS, OBJECTS }
 }
 
 export const PLACES = {
@@ -308,6 +318,26 @@ export function isWall(place, row, col) {
 
 // 선택 가능한 아바타 (이모지)
 export const AVATARS = ['🦊', '🐱', '🐶', '🐼', '🐰', '🐸', '🐵', '🦁', '🐯', '🐨', '🐧', '🦄']
+
+// 아바타별 귀여운 랜덤 닉네임 (이름 미입력 시): 접두사 + 동물명
+const NICK_PARTS = {
+  '🦊': { base: '여우', pre: ['새침한', '도시', '꼬리아홉', '간식도둑'] },
+  '🐱': { base: '고양이', pre: ['츤데레', '식빵굽는', '집사홀린', '낮잠왕'] },
+  '🐶': { base: '강아지', pre: ['해맑은', '산책가는', '꼬리흔드는', '간식셔틀'] },
+  '🐼': { base: '팬더', pre: ['쿵푸', '대나무', '먹보', '데굴데굴'] },
+  '🐰': { base: '토끼', pre: ['달나라', '당근킬러', '깡총', '귀쫑긋'] },
+  '🐸': { base: '개구리', pre: ['슬픈', '신사동', '연못', '폴짝'] },
+  '🐵': { base: '원숭이', pre: ['날쌘', '바나나', '장난꾸러기', '나무타는'] },
+  '🦁': { base: '사자', pre: ['용맹한', '갈기휘날리는', '백수의왕', '늠름한'] },
+  '🐯': { base: '호랭이', pre: ['신사동', '줄무늬', '어흥', '산속'] },
+  '🐨': { base: '코알라', pre: ['잠많은', '유칼립투스', '느긋한', '껌딱지'] },
+  '🐧': { base: '펭귄', pre: ['턱시도', '뒤뚱', '남극', '빙판위'] },
+  '🦄': { base: '유니콘', pre: ['무지개', '반짝이는', '전설의', '꿈꾸는'] },
+}
+export function randomNickname(avatar) {
+  const n = NICK_PARTS[avatar] || { base: '게스트', pre: ['반가운', '신비한'] }
+  return n.pre[Math.floor(Math.random() * n.pre.length)] + n.base
+}
 
 // 닉네임 라벨 색상 후보
 export const COLORS = [

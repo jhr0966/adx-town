@@ -56,6 +56,20 @@ test('온천 입욕(E) → 잠김(노곤노곤) 활동 표시', async ({ page })
   await page.keyboard.press('e')
   await expect(page.locator('.activity-overlay')).toContainText('노곤노곤')
   await expect(page.locator('.avatar.me.act-bath')).toBeVisible()
+  // 이동하면 온천에서 빠져나온다(막혀서 못 나오던 버그 회귀 방지)
+  await page.keyboard.press('ArrowUp')
+  await expect(page.locator('.avatar.me.act-bath')).toHaveCount(0)
+})
+
+test('이름 미입력 → 아바타별 랜덤 닉네임 자동 생성', async ({ page }) => {
+  await page.goto('/?room=t-rnd')
+  await page.evaluate(() => localStorage.removeItem('adxtown:prefs'))
+  await page.reload()
+  await page.locator('.entry input').fill('') // 비움
+  await page.locator('.enter-btn').click() // disabled 아님
+  await page.locator('.notice-ok').click().catch(() => {})
+  const name = await page.locator('.avatar.me .avatar-name').innerText()
+  expect(name.trim().length).toBeGreaterThan(1) // 랜덤 닉네임 생성됨
 })
 
 test('헬스룸 기구 상호작용(E) → 운동 상태', async ({ page }) => {

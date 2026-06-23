@@ -2116,20 +2116,102 @@ button.chat-min { display: none; }
 /* 노래방 미러볼 */
 .tile.disco .tile-icon { font-size: 20px; animation: adx-disco 3s linear infinite; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-2) 80%, transparent)); }
 
-/* ── 온천 입욕(잠김) — 상체만 보이고 머리에 수건, 김 ── */
+/* ── 온천 입욕(잠김) — 상체만 보이고 머리에 흰 수건 ── */
 .avatar.act-bath .avatar-pad { display: none; }
-.avatar.act-bath .avatar-emoji { clip-path: inset(0 0 42% 0); filter: drop-shadow(0 2px 2px var(--shadow)); }
+.avatar.act-bath .avatar-emoji { clip-path: inset(0 0 40% 0); filter: drop-shadow(0 2px 2px var(--shadow)); }
+/* 수면 물결 라인 */
 .avatar.act-bath .avatar-emoji::after {
   content: '';
   position: absolute;
   left: 50%;
-  bottom: 36%;
-  width: 150%;
-  height: 9px;
+  bottom: 38%;
+  width: 165%;
+  height: 8px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: color-mix(in srgb, var(--accent-2) 55%, transparent);
+  background: color-mix(in srgb, var(--accent-2) 50%, transparent);
   animation: adx-water-ripple 2.6s ease-in-out infinite;
+}
+/* 머리 위 흰 수건 */
+.bath-towel {
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 22px;
+  height: 8px;
+  transform: translateX(-50%) rotate(-4deg);
+  background: linear-gradient(180deg, #ffffff, #e9edf2);
+  border-radius: 7px 7px 5px 5px;
+  box-shadow: 0 1px 2px var(--shadow), inset 0 -2px 0 rgba(0, 0, 0, 0.07);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ============================================================
+   큰 가구 오브젝트 — 칸 격자 대신 이어진 사각 (Furniture 레이어)
+   ============================================================ */
+/* 풋프린트 타일은 비주얼 숨김(충돌만 담당) — 오브젝트가 그린다 */
+.tile.spaWater, .tile.pool, .tile.foodTable, .tile.cafeCounter, .tile.barCounter {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.tile.spaWater::after { display: none; }
+.tile.pool .tile-icon, .tile.foodTable .tile-icon,
+.tile.cafeCounter .tile-icon, .tile.barCounter .tile-icon { display: none; }
+
+.furn { position: absolute; z-index: 1; pointer-events: none; }
+.furn-emoji { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 20px; filter: drop-shadow(0 1px 1px var(--shadow)); }
+
+/* 온천: 두꺼운 나무 프레임 + 이어진 청록 수면 */
+.furn-onsen {
+  border-radius: 20px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 52%, #6a4226), color-mix(in srgb, var(--accent) 30%, #45291a));
+  box-shadow: 0 8px 20px var(--shadow), inset 0 3px 0 rgba(255, 255, 255, 0.22), inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+}
+.furn-onsen .furn-water {
+  position: absolute;
+  inset: 13px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent-2) 48%, #eafffb), color-mix(in srgb, var(--accent-2) 86%, #06514a));
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent-2) 55%, #06463f);
+}
+.furn-onsen .furn-water::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 9px, rgba(255, 255, 255, 0.13) 9px 10px);
+  animation: adx-ripple-flow 5s linear infinite;
+}
+.furn-onsen-sign { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 26px; opacity: 0.85; z-index: 1; }
+
+/* 당구대: 우드 레일 + 펠트 + 6 포켓 + 8볼 */
+.furn-pooltable {
+  border-radius: 13px;
+  background: linear-gradient(180deg, #80502f, #5a3420);
+  box-shadow: 0 6px 14px var(--shadow), inset 0 3px 0 rgba(255, 255, 255, 0.18);
+}
+.furn-pooltable .furn-felt {
+  position: absolute;
+  inset: 9px;
+  border-radius: 7px;
+  background: radial-gradient(circle at 50% 40%, #2fa86f, #1c7a4e);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.32);
+}
+.furn-pocket { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #16120f; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); z-index: 1; }
+.furn-8 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 19px; height: 19px; border-radius: 50%; background: #1b1b1b; color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; z-index: 2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+
+/* 식탁 / 카운터: 이어진 우드 라운드 */
+.furn-table {
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 46%, var(--surface)), color-mix(in srgb, var(--accent) 28%, var(--surface)));
+  box-shadow: 0 3px 8px var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.32);
+}
+.furn-counter {
+  border-radius: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 56%, #5a3422), color-mix(in srgb, var(--accent) 34%, #3a2014));
+  box-shadow: 0 4px 10px var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {

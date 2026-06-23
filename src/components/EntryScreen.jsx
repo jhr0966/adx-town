@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AVATARS, COLORS } from '../constants'
+import { AVATARS, COLORS, randomNickname } from '../constants'
 import { HAS_SUPABASE } from '../lib/config'
 import { prettyRoomName } from '../lib/realtime'
 
@@ -24,9 +24,8 @@ export default function EntryScreen({ onEnter, roomId, roomName, onBack }) {
 
   const submit = (e) => {
     e.preventDefault()
-    const name = nickname.trim()
-    if (!name) return
-    const nick = name.slice(0, 16)
+    // 미입력 시 아바타별 귀여운 랜덤 닉네임 (쿵푸팬더 / 신사동호랭이 / 슬픈개구리 …)
+    const nick = (nickname.trim() || randomNickname(avatar)).slice(0, 16)
     try { localStorage.setItem(PREFS_KEY, JSON.stringify({ nickname: nick, avatar, color })) } catch {}
     onEnter({
       id: (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()).slice(2),
@@ -52,7 +51,7 @@ export default function EntryScreen({ onEnter, roomId, roomName, onBack }) {
             autoFocus
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            placeholder="이름을 입력하세요"
+            placeholder="비우면 랜덤 (예: 쿵푸팬더)"
             maxLength={16}
           />
         </label>
@@ -88,7 +87,7 @@ export default function EntryScreen({ onEnter, roomId, roomName, onBack }) {
           </div>
         </div>
 
-        <button type="submit" className="enter-btn" disabled={!nickname.trim()}>
+        <button type="submit" className="enter-btn">
           입장하기
         </button>
 
