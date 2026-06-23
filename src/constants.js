@@ -1,7 +1,9 @@
 // 맵 / 아바타 공통 설정 — 여러 장소(PLACES) 지원
 //
 // 각 장소는 { COLS, ROWS, tiles, START, SCREEN, ZONES, BOARDS } 를 가진다.
-// 장소 이동 시 모두 함께 이동한다.
+// 사무실/대회의실은 전원 이동(setPlace). 별관은 단일 맵(한 층)으로, 방을
+// 공간으로 나눈다 — 같은 별관에 있는 사람은 모두 한 맵에서 서로 보이고,
+// 상단 "🏬 별관" 모달의 ROOMS 로 내 위치만 개인 순간이동한다.
 
 export const TILE = 34
 
@@ -93,266 +95,171 @@ function buildConference() {
   g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
 
   // 스크린을 둘러싼 좌석(의자=안쪽, 책상=바깥쪽)
-  // 위
   for (let c = 9; c <= 20; c++) { g.set(4, c, 'chair'); g.set(3, c, 'deskpc') }
-  // 아래
   for (let c = 9; c <= 20; c++) { g.set(15, c, 'chair'); g.set(16, c, 'deskpc') }
-  // 왼쪽
   for (let r = 6; r <= 13; r++) { g.set(r, 7, 'chair'); g.set(r, 6, 'deskpc') }
-  // 오른쪽
   for (let r = 6; r <= 13; r++) { g.set(r, 22, 'chair'); g.set(r, 23, 'deskpc') }
 
-  // 장식
   for (const [r, c] of [[2, 2], [2, COLS - 3], [ROWS - 3, 2], [ROWS - 3, COLS - 3]]) g.set(r, c, 'plant')
 
-  const ZONES = [
-    { text: '🎤 대회의실', row: 1, col: 12, big: true },
-  ]
-
+  const ZONES = [{ text: '🎤 대회의실', row: 1, col: 12, big: true }]
   return { COLS, ROWS, tiles: g.tiles, START: { row: 18, col: 14 }, SCREEN, ZONES, BOARDS: [] }
 }
 
-// ── 3) 별관(別館) — 여러 층(개인별 이동) ──
-// 설계 메모: 사무실/대회의실은 기존처럼 room.setPlace()로 "전원 이동"을 유지(테스트 보존).
-// 별관 층은 개인별 이동 — room.updateState({ place, row, col })로만 처리하고 setPlace를 쓰지 않는다.
-// 같은 place(층)에 있는 사람만 서로의 아바타/말풍선/근접음성/미니맵에 보인다.
-const ANNEX_W = 40, ANNEX_H = 24
-const ST_UP = { row: 2, col: ANNEX_W - 3 }     // 위층 계단(우상)
-const ST_DOWN = { row: ANNEX_H - 3, col: 2 }   // 아래층 계단(좌하)
+// ── 3) 별관(別館) — 단일 맵(한 층). 8개 방을 벽+중앙 복도로 구획.
+//   상단 행: 🛋️휴게실 · 🐾펫파크 · 🏕️캠핑존 · 🍽️식당
+//   하단 행: 🏋️헬스룸 · ♨️온천 · 🎮게임룸 · 🎤노래방
+function buildAnnex() {
+  const COLS = 60, ROWS = 34
+  const g = makeGrid(COLS, ROWS)
+  g.rect(0, 0, ROWS - 1, COLS - 1, 'annexFloor')
+  for (let c = 0; c < COLS; c++) { g.set(0, c, 'wall'); g.set(ROWS - 1, c, 'wall') }
+  for (let r = 0; r < ROWS; r++) { g.set(r, 0, 'wall'); g.set(r, COLS - 1, 'wall') }
+  // 중앙 가로 복도 — 모든 방이 면한다
+  g.rect(15, 1, 18, COLS - 2, 'corridor')
+  // 방 구획용 세로벽 (복도 rows15-18 은 비워 연결)
+  for (const c of [15, 30, 45]) {
+    for (let r = 1; r <= 14; r++) g.set(r, c, 'wall')
+    for (let r = 19; r <= ROWS - 2; r++) g.set(r, c, 'wall')
+  }
 
-function annexBase(g, { up, down }) {
-  g.rect(0, 0, ANNEX_H - 1, ANNEX_W - 1, 'annexFloor')
-  for (let c = 0; c < ANNEX_W; c++) { g.set(0, c, 'wall'); g.set(ANNEX_H - 1, c, 'wall') }
-  for (let r = 0; r < ANNEX_H; r++) { g.set(r, 0, 'wall'); g.set(r, ANNEX_W - 1, 'wall') }
-  if (up) g.set(ST_UP.row, ST_UP.col, 'stairUp')
-  if (down) g.set(ST_DOWN.row, ST_DOWN.col, 'stairDown')
-}
-function stairInteractions({ up, down }) {
-  const a = []
-  if (up) a.push({ id: 'stair-up', label: 'E: 위층으로 이동', type: 'floor-change', row: ST_UP.row, col: ST_UP.col + 1, radius: 1.8, target: up })
-  if (down) a.push({ id: 'stair-down', label: 'E: 아래층으로 이동', type: 'floor-change', row: ST_DOWN.row, col: ST_DOWN.col + 1, radius: 1.8, target: down })
-  return a
-}
+  // ── 🛋️ 휴게실 (좌상) ──
+  g.rect(3, 2, 13, 13, 'rug')
+  for (let c = 4; c <= 11; c++) g.set(2, c, 'shelf')
+  for (let c = 4; c <= 10; c++) g.set(5, c, 'sofa')
+  for (let r = 6; r <= 10; r++) { g.set(r, 4, 'sofa'); g.set(r, 10, 'sofa') }
+  g.set(8, 7, 'rtable'); g.set(8, 8, 'rtable')
+  g.set(13, 2, 'plant'); g.set(13, 13, 'plant')
 
-// B1 — 힐링 온천·찜질방
-function buildSpa() {
-  const links = { up: 'annex-1f-food' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  // 온천탕 (좌측): 데크 + 바위 테두리 + 물
-  g.rect(3, 3, 14, 17, 'deck')
-  g.rect(4, 4, 13, 16, 'onsenrock')
-  g.rect(5, 5, 12, 15, 'spaWater')
-  for (const [r, c] of [[3, 3], [3, 17], [14, 3], [14, 17]]) g.set(r, c, 'lantern')
-  // 찜질방 매트 (우측 상단) + 황토방/얼음방
-  g.rect(3, 23, 8, 35, 'saunaMat')
-  g.rect(11, 23, 12, 26, 'foodTable') // 식혜·계란 진열
-  g.set(11, 23, 'foodTable')
-  for (const [r, c] of [[16, 22], [16, 36], [3, 21], [20, 20]]) g.set(r, c, 'plant')
-  const SCREEN = { row: 17, col: 24, w: 6, h: 3 }
+  // ── 🐾 펫파크 ──
+  g.rect(2, 16, 13, 29, 'grass')
+  g.set(3, 18, 'catTower'); g.set(3, 27, 'catTower')
+  for (const [r, c] of [[7, 20], [10, 25], [6, 24]]) g.set(r, c, 'petToy')
+  g.set(11, 17, 'rtable')
+  g.set(13, 28, 'plant')
+
+  // ── 🏕️ 캠핑존 ──
+  g.rect(2, 31, 13, 44, 'grass')
+  g.set(7, 37, 'campfire')
+  for (const [r, c] of [[6, 35], [6, 39], [9, 37]]) g.set(r, c, 'campChair')
+  g.set(4, 33, 'tent'); g.set(4, 41, 'tent')
+  g.set(9, 33, 'foodTable')
+  g.set(2, 31, 'lantern'); g.set(2, 44, 'lantern')
+  g.set(13, 38, 'plant')
+
+  // ── 🍽️ 식당 ──
+  g.rect(2, 46, 2, 57, 'cafeCounter')
+  for (const [r, c] of [[5, 48], [5, 53], [8, 48], [8, 53]]) { g.set(r, c, 'foodTable'); g.set(r + 1, c, 'chair') }
+  for (const c of [48, 51, 54]) g.set(3, c, 'barstool')
+  g.set(13, 46, 'plant'); g.set(13, 57, 'plant')
+
+  // ── 🏋️ 헬스룸 (좌하) ──
+  for (const c of [3, 6, 9]) g.set(20, c, 'treadmill')
+  for (const c of [3, 6, 9]) g.set(24, c, 'bike')
+  g.set(28, 4, 'bench'); g.set(28, 7, 'bench')
+  g.set(24, 12, 'dumbbell'); g.set(26, 12, 'dumbbell')
+  g.rect(29, 9, 31, 13, 'yoga')
+  g.set(31, 2, 'plant')
+
+  // ── ♨️ 온천 ──
+  g.rect(21, 18, 29, 26, 'deck')
+  g.rect(22, 19, 28, 25, 'onsenrock')
+  g.rect(23, 20, 27, 24, 'spaWater')
+  for (const [r, c] of [[20, 18], [20, 26], [30, 18], [30, 26]]) g.set(r, c, 'lantern')
+  g.set(31, 28, 'plant')
+
+  // ── 🎮 게임룸 ──
+  for (const c of [33, 35, 37]) g.set(20, c, 'arcade')
+  g.rect(24, 33, 25, 38, 'pool')
+  g.rect(28, 33, 29, 37, 'rug')
+  g.set(21, 42, 'escapeWall'); g.set(22, 42, 'keypad'); g.set(23, 42, 'escapeWall')
+  g.set(31, 32, 'plant')
+
+  // ── 🎤 노래방 ──
+  const SCREEN = { row: 20, col: 48, w: 7, h: 4 }
   g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
+  g.rect(27, 47, 29, 56, 'rug')
+  for (const c of [48, 51, 54]) g.set(31, c, 'barstool')
+  g.set(25, 57, 'plant')
+
   const ZONES = [
-    { text: '♨️ 온천탕', row: 2, col: 8, big: true },
-    { text: '🧖 찜질방', row: 2, col: 27, big: true },
-    { text: '🟤 황토방', row: 9.4, col: 24, small: true },
-    { text: '🧊 얼음방', row: 9.4, col: 31, small: true },
+    { text: '🛋️ 휴게실', row: 1.2, col: 5, big: true },
+    { text: '🐾 펫파크', row: 1.2, col: 20, big: true },
+    { text: '🏕️ 캠핑존', row: 1.2, col: 35, big: true },
+    { text: '🍽️ 식당', row: 1.2, col: 50, big: true },
+    { text: '🏋️ 헬스룸', row: 19.2, col: 5, big: true },
+    { text: '♨️ 온천', row: 19.2, col: 20, big: true },
+    { text: '🎮 게임룸', row: 19.2, col: 35, big: true },
+    { text: '🎤 노래방', row: 19.2, col: 50, big: true },
   ]
   const DECOR = [
-    { kind: 'steam', row: 6, col: 7 }, { kind: 'steam', row: 7, col: 10 }, { kind: 'steam', row: 6, col: 13 },
-    { kind: 'steam', row: 9, col: 8 }, { kind: 'steam', row: 10, col: 12 },
+    { kind: 'steam', row: 24, col: 21 }, { kind: 'steam', row: 25, col: 23 }, { kind: 'steam', row: 23, col: 22 },
+    { kind: 'ember', row: 7, col: 37 }, { kind: 'ember', row: 6, col: 37 },
+    { kind: 'spark', row: 22, col: 50 }, { kind: 'spark', row: 24, col: 54 }, { kind: 'spark', row: 5, col: 37 },
   ]
-  const INTERACTIONS = [
-    { id: 'onsen', label: 'E: 온천 즐기기', type: 'onsen', row: 9, col: 18, radius: 2.4, target: { row: 9, col: 14 }, activity: { type: 'onsen', label: '온천 즐기는 중 ♨️' } },
-    { id: 'lie', label: 'E: 찜질 매트에 눕기', type: 'sit', row: 6, col: 28, radius: 2.4, target: { row: 5, col: 28 }, activity: { type: 'lie', label: '지글지글 찜질 중 🧖' } },
-    { id: 'sikhye', label: 'E: 식혜·계란 먹기', type: 'toast', row: 12, col: 24, radius: 2.2, message: '시원한 식혜와 따끈한 맥반석 계란 🥚 — 찜질방의 완성!' },
-  ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 18, col: 12 }, SCREEN, ZONES, BOARDS: [], DECOR, INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
-}
+  const PETS = { count: 4, r0: 3, c0: 16, r1: 13, c1: 29 }
 
-// 1F — 카페테리아·포장마차
-function buildFood() {
-  const links = { up: 'annex-2f-game', down: 'annex-b1-spa' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  // 카페테리아(좌): 배식대 + 긴 테이블 + 디저트
-  g.rect(3, 3, 3, 14, 'cafeCounter')
-  for (const [r, c] of [[6, 4], [6, 7], [6, 10], [9, 4], [9, 7], [9, 10]]) { g.set(r, c, 'foodTable'); g.set(r + 1, c, 'chair') }
-  g.set(3, 16, 'cafeCounter')
-  // 포장마차(우): 빨간 천막 + 둥근 의자 + 냄비
-  g.rect(4, 24, 5, 34, 'pochaTent')
-  for (const c of [25, 28, 31, 34]) g.set(7, c, 'foodTable')
-  for (const c of [25, 28, 31, 34]) g.set(8, c, 'barstool')
-  for (const [r, c] of [[3, 21], [20, 6], [20, 33]]) g.set(r, c, 'plant')
-  const SCREEN = { row: 13, col: 16, w: 6, h: 3 }
-  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
-  const ZONES = [
-    { text: '☕ 카페테리아', row: 1.4, col: 5, big: true },
-    { text: '🏮 포장마차', row: 2.2, col: 27, big: true },
-  ]
-  const DECOR = [{ kind: 'spark', row: 3, col: 25 }, { kind: 'spark', row: 3, col: 33 }, { kind: 'steam', row: 9, col: 29 }]
   const INTERACTIONS = [
-    { id: 'coffee', label: 'E: 커피 주문', type: 'toast', row: 4, col: 8, radius: 2.4, message: '따뜻한 아메리카노가 나왔습니다 ☕' },
-    { id: 'cafe-sit', label: 'E: 자리에 앉기', type: 'sit', row: 7, col: 7, radius: 1.8, target: { row: 7, col: 7 }, activity: { type: 'sit', label: '카페에서 수다 중 💬' } },
-    { id: 'pocha', label: 'E: 포장마차에서 한 잔', type: 'sit', row: 8, col: 28, radius: 2.2, target: { row: 8, col: 28 }, activity: { type: 'sit', label: '어묵 국물에 라면 🍜' } },
+    // 휴게실
+    { id: 'lounge-sit', label: 'E: 소파에 앉기', type: 'sit', row: 11, col: 7, radius: 2.2, target: { row: 7, col: 7 }, activity: { type: 'sit', label: '휴게실에서 쉬는 중 🛋️' } },
+    { id: 'book', label: 'E: 책 읽기', type: 'toast', row: 3, col: 7, radius: 2.0, message: '베스트셀러 한 권을 집어들었어요 📚' },
+    // 펫파크
+    { id: 'pet', label: 'E: 고양이와 놀기', type: 'toast', row: 8, col: 22, radius: 2.6, message: '고양이가 골골거리며 다가옵니다 🐱💕' },
+    // 캠핑존
+    { id: 'campfire', label: 'E: 불멍 즐기기', type: 'sit', row: 10, col: 37, radius: 2.2, target: { row: 8, col: 37 }, activity: { type: 'campfire', label: '불멍 중… 🔥' } },
+    { id: 'marsh', label: 'E: 마시멜로 굽기', type: 'toast', row: 10, col: 33, radius: 2.0, message: '마시멜로가 노릇노릇 구워집니다 🔥🍡' },
+    // 식당
+    { id: 'order', label: 'E: 음식 주문', type: 'toast', row: 3, col: 51, radius: 2.4, message: '라면과 김밥이 나왔습니다 🍜🍙' },
+    { id: 'diner-sit', label: 'E: 자리에 앉기', type: 'sit', row: 7, col: 48, radius: 1.8, target: { row: 6, col: 48 }, activity: { type: 'sit', label: '식당에서 식사 중 🍽️' } },
+    // 헬스룸
+    { id: 'treadmill', label: 'E: 러닝머신', type: 'gym', row: 21, col: 6, radius: 1.8, target: { row: 20, col: 6 }, activity: { type: 'gym-treadmill', label: '러닝머신 운동 중 🏃' } },
+    { id: 'bike', label: 'E: 사이클', type: 'gym', row: 25, col: 6, radius: 1.8, target: { row: 24, col: 6 }, activity: { type: 'gym-bike', label: '사이클 운동 중 🚴' } },
+    { id: 'bench', label: 'E: 벤치프레스', type: 'gym', row: 29, col: 5, radius: 1.8, target: { row: 28, col: 4 }, activity: { type: 'gym-bench', label: '벤치프레스 운동 중 💪' } },
+    { id: 'dumbbell', label: 'E: 덤벨 운동', type: 'gym', row: 25, col: 11, radius: 2.0, target: { row: 25, col: 11 }, activity: { type: 'gym-dumbbell', label: '덤벨 운동 중 💪' } },
+    { id: 'yoga', label: 'E: 요가·명상', type: 'gym', row: 30, col: 11, radius: 2.0, target: { row: 30, col: 11 }, activity: { type: 'yoga', label: '요가·명상 중 🧘' } },
+    // 온천
+    { id: 'onsen', label: 'E: 온천 즐기기', type: 'onsen', row: 30, col: 22, radius: 2.6, target: { row: 25, col: 22 }, activity: { type: 'onsen', label: '온천 즐기는 중 ♨️' } },
+    // 게임룸
+    { id: 'arcade', label: 'E: 게임 시작', type: 'minigame', row: 21, col: 35, radius: 2.2 },
+    { id: 'pool', label: 'E: 당구 치기', type: 'toast', row: 26, col: 35, radius: 2.2, message: '🎱 나이스 샷! 8번 공 인!' },
+    { id: 'rhythm', label: 'E: 리듬 발판에서 춤추기', type: 'dance', row: 30, col: 35, radius: 1.8 },
+    { id: 'escape', label: 'E: 방탈출 도전', type: 'escape', row: 22, col: 40, radius: 2.2 },
+    // 노래방
+    { id: 'sing', label: 'E: 노래 부르기', type: 'dance', row: 28, col: 51, radius: 2.6 },
   ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 18, col: 14 }, SCREEN, ZONES, BOARDS: [], DECOR, INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
-}
 
-// 2F — 게임존·방탈출
-function buildGame() {
-  const links = { up: 'annex-3f-gym', down: 'annex-1f-food' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  // 오락실(좌)
-  for (const c of [4, 6, 8, 10]) g.set(4, c, 'arcade')
-  g.rect(8, 4, 9, 8, 'rug') // 리듬 발판
-  g.set(12, 5, 'arcade'); g.set(12, 7, 'arcade')
-  // 방탈출(우): 어두운 방 + 키패드 + 단서벽
-  g.rect(3, 22, 12, 36, 'escapeWall')
-  g.rect(5, 24, 10, 34, 'annexFloor')
-  g.set(7, 35, 'keypad')
-  for (const [r, c] of [[5, 25], [5, 30], [10, 28]]) g.set(r, c, 'foodTable') // 단서 카드 책상
-  const SCREEN = { row: 3, col: 12, w: 7, h: 4 } // 대형 점수판
-  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
-  const ZONES = [
-    { text: '🎮 오락실', row: 1.6, col: 5, big: true },
-    { text: '🔒 방탈출', row: 1.6, col: 27, big: true },
-  ]
-  const DECOR = [{ kind: 'spark', row: 5, col: 5 }, { kind: 'spark', row: 5, col: 9 }, { kind: 'spark', row: 13, col: 6 }]
-  const INTERACTIONS = [
-    { id: 'arcade', label: 'E: 게임 시작', type: 'minigame', row: 5, col: 6, radius: 2.2 },
-    { id: 'rhythm', label: 'E: 리듬 발판에서 춤추기', type: 'dance', row: 10, col: 6, radius: 1.8 },
-    { id: 'escape', label: 'E: 방탈출 도전', type: 'escape', row: 8, col: 35, radius: 2.4 },
-  ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 18, col: 14 }, SCREEN, ZONES, BOARDS: [], DECOR, INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
-}
-
-// 3F — 피트니스 센터
-function buildGym() {
-  const links = { up: 'annex-4f-rest-pet', down: 'annex-2f-game' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  for (const c of [5, 8, 11]) g.set(4, c, 'treadmill')      // 러닝머신
-  for (const c of [5, 8, 11]) g.set(8, c, 'bike')           // 사이클
-  g.set(12, 6, 'bench'); g.set(12, 9, 'bench')              // 벤치프레스
-  g.rect(4, 22, 9, 30, 'rug')
-  for (const [r, c] of [[5, 24], [5, 27], [7, 24], [7, 27]]) g.set(r, c, 'dumbbell') // 덤벨존
-  g.rect(13, 24, 16, 32, 'yoga')                            // 요가매트
-  for (const [r, c] of [[3, 34], [20, 6], [20, 30]]) g.set(r, c, 'plant')
-  const SCREEN = { row: 13, col: 6, w: 6, h: 3 }
-  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
-  const ZONES = [
-    { text: '🏃 유산소', row: 2, col: 6, big: true },
-    { text: '🏋️ 웨이트', row: 2, col: 25, big: true },
-    { text: '🧘 요가존', row: 11.4, col: 26, small: true },
-  ]
-  const INTERACTIONS = [
-    { id: 'treadmill', label: 'E: 러닝머신', type: 'gym', row: 5, col: 8, radius: 2.2, target: { row: 4, col: 8 }, activity: { type: 'gym-treadmill', label: '러닝머신 운동 중 🏃' } },
-    { id: 'bike', label: 'E: 사이클', type: 'gym', row: 9, col: 8, radius: 2.2, target: { row: 8, col: 8 }, activity: { type: 'gym-bike', label: '사이클 운동 중 🚴' } },
-    { id: 'bench', label: 'E: 벤치프레스', type: 'gym', row: 13, col: 7, radius: 1.8, target: { row: 12, col: 6 }, activity: { type: 'gym-bench', label: '벤치프레스 운동 중 💪' } },
-    { id: 'dumbbell', label: 'E: 덤벨 운동', type: 'gym', row: 6, col: 25, radius: 2.4, target: { row: 6, col: 25 }, activity: { type: 'gym-dumbbell', label: '덤벨 운동 중 💪' } },
-    { id: 'yoga', label: 'E: 요가·명상', type: 'gym', row: 14, col: 28, radius: 2.4, target: { row: 14, col: 28 }, activity: { type: 'yoga', label: '요가·명상 중 🧘' } },
-  ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 18, col: 16 }, SCREEN, ZONES, BOARDS: [], DECOR: [], INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
-}
-
-// 4F — 펫파크·낮잠방
-function buildRestPet() {
-  const links = { up: 'annex-rf-rooftop', down: 'annex-3f-gym' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  // 펫파크(좌): 잔디 + 캣타워 + 장난감 + 물그릇
-  g.rect(3, 3, 20, 18, 'grass')
-  g.set(5, 6, 'catTower'); g.set(5, 13, 'catTower')
-  for (const [r, c] of [[10, 6], [12, 14], [16, 9]]) g.set(r, c, 'petToy')
-  g.set(8, 16, 'rtable') // 물그릇/쿠션
-  // 낮잠방(우): 어두운 캡슐 침대
-  g.rect(3, 22, 20, 37, 'napRoom')
-  for (const r of [5, 8, 11, 14]) { g.set(r, 24, 'napBed'); g.set(r, 27, 'napBed') }
-  for (const [r, c] of [[4, 34], [18, 34]]) g.set(r, c, 'lantern')
-  const SCREEN = { row: 3, col: 31, w: 5, h: 3 }
-  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
-  const ZONES = [
-    { text: '🐾 펫파크', row: 1.6, col: 8, big: true },
-    { text: '🌙 낮잠방', row: 1.6, col: 28, big: true },
-  ]
-  const DECOR = [{ kind: 'spark', row: 6, col: 35 }, { kind: 'spark', row: 12, col: 32 }, { kind: 'spark', row: 16, col: 36 }]
-  const PETS = { count: 4, r0: 4, c0: 3, r1: 19, c1: 17 } // 고양이 NPC 배회 영역(잔디)
-  const INTERACTIONS = [
-    { id: 'nap', label: 'E: 낮잠 자기', type: 'nap', row: 5, col: 25, radius: 2.0, target: { row: 5, col: 25 }, activity: { type: 'nap', label: '낮잠 자는 중 💤' } },
-    { id: 'nap2', label: 'E: 낮잠 자기', type: 'nap', row: 11, col: 26, radius: 2.0, target: { row: 11, col: 27 }, activity: { type: 'nap', label: '낮잠 자는 중 💤' } },
-    { id: 'play', label: 'E: 고양이와 놀기', type: 'toast', row: 16, col: 9, radius: 2.2, message: '고양이가 골골거리며 다가옵니다 🐱💕' },
-  ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 21, col: 20 }, SCREEN, ZONES, BOARDS: [], DECOR, PETS, INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
-}
-
-// RF — 캠핑 불멍·야경 BAR
-function buildRooftop() {
-  const links = { down: 'annex-4f-rest-pet' }
-  const g = makeGrid(ANNEX_W, ANNEX_H)
-  annexBase(g, links)
-  for (let c = 1; c < ANNEX_W - 1; c++) g.set(1, c, 'skyline') // 스카이라인 배경
-  // 캠핑 불멍존(좌/중)
-  g.set(9, 9, 'campfire')
-  for (const [r, c] of [[8, 7], [8, 11], [11, 9]]) g.set(r, c, 'campChair')
-  g.set(6, 6, 'tent'); g.set(6, 12, 'tent')
-  g.set(11, 6, 'foodTable') // 마시멜로/장작 테이블
-  for (const [r, c] of [[4, 4], [4, 14]]) g.set(r, c, 'lantern')
-  // 야경 BAR(우)
-  g.rect(5, 26, 5, 35, 'barCounter')
-  for (const c of [27, 29, 31, 33, 35]) g.set(6, c, 'barstool')
-  for (const [r, c] of [[12, 28], [12, 33], [16, 30]]) { g.set(r, c, 'foodTable'); g.set(r + 1, c, 'barstool') }
-  const SCREEN = { row: 3, col: 30, w: 5, h: 3 }
-  g.rect(SCREEN.row, SCREEN.col, SCREEN.row + SCREEN.h - 1, SCREEN.col + SCREEN.w - 1, 'screen')
-  const ZONES = [
-    { text: '🔥 불멍존', row: 3.4, col: 8, big: true },
-    { text: '🍸 야경 BAR', row: 3.4, col: 29, big: true },
-  ]
-  const DECOR = [
-    { kind: 'ember', row: 9, col: 9 }, { kind: 'ember', row: 8, col: 9 },
-    { kind: 'star', row: 2, col: 6 }, { kind: 'star', row: 2, col: 16 }, { kind: 'star', row: 2, col: 24 },
-    { kind: 'star', row: 2, col: 32 }, { kind: 'star', row: 3, col: 20 },
-  ]
-  const INTERACTIONS = [
-    { id: 'campfire', label: 'E: 불멍 즐기기', type: 'sit', row: 9, col: 9, radius: 2.4, target: { row: 11, col: 9 }, activity: { type: 'campfire', label: '불멍 중… 🔥' } },
-    { id: 'marsh', label: 'E: 마시멜로 굽기', type: 'toast', row: 11, col: 6, radius: 2.0, message: '마시멜로가 노릇노릇 구워집니다 🔥🍡' },
-    { id: 'bar', label: 'E: 음료 주문', type: 'toast', row: 6, col: 30, radius: 2.4, message: '무알콜 모히토가 나왔습니다 🍸 (시원한 탄산 + 라임)' },
-  ]
-  return { COLS: ANNEX_W, ROWS: ANNEX_H, tiles: g.tiles, START: { row: 20, col: 20 }, SCREEN, ZONES, BOARDS: [], DECOR, INTERACTIONS: [...INTERACTIONS, ...stairInteractions(links)] }
+  return { COLS, ROWS, tiles: g.tiles, START: { row: 17, col: 29 }, SCREEN, ZONES, BOARDS: [], DECOR, PETS, INTERACTIONS }
 }
 
 export const PLACES = {
   office: buildOffice(),
   conference: buildConference(),
-  'annex-b1-spa': buildSpa(),
-  'annex-1f-food': buildFood(),
-  'annex-2f-game': buildGame(),
-  'annex-3f-gym': buildGym(),
-  'annex-4f-rest-pet': buildRestPet(),
-  'annex-rf-rooftop': buildRooftop(),
+  annex: buildAnnex(),
 }
-// 상단바 "전원 이동" 버튼 — 별관 층은 여기 넣지 않는다(개인 이동, 모달로 진입).
+// 상단 "전원 이동" 버튼 — 별관은 여기 넣지 않는다(개인 입장, 모달로 진입).
 export const PLACE_LIST = [
   { key: 'office', label: '🏢 사무실' },
   { key: 'conference', label: '🎤 대회의실' },
 ]
-// 별관 층 메타 — 🏬 별관 버튼 → AnnexFloorModal 목록
-export const ANNEX_FLOORS = [
-  { key: 'annex-b1-spa', icon: '♨️', name: 'B1 힐링 온천·찜질방', desc: '온천, 찜질, 수건, 식혜', tags: ['온천', '찜질', '식혜'] },
-  { key: 'annex-1f-food', icon: '🍜', name: '1F 카페테리아·포장마차', desc: '커피, 식사, 야식, 수다', tags: ['커피', '야식', '수다'] },
-  { key: 'annex-2f-game', icon: '🎮', name: '2F 게임존·방탈출', desc: '오락실, 미니게임, 퍼즐', tags: ['오락실', '미니게임', '퍼즐'] },
-  { key: 'annex-3f-gym', icon: '🏋️', name: '3F 피트니스 센터', desc: '러닝, 근력, 요가', tags: ['러닝', '근력', '요가'] },
-  { key: 'annex-4f-rest-pet', icon: '🐾', name: '4F 펫파크·낮잠방', desc: '고양이, 휴식, Zzz', tags: ['고양이', '휴식', 'Zzz'] },
-  { key: 'annex-rf-rooftop', icon: '🌃', name: 'RF 캠핑 불멍·야경 BAR', desc: '캠프파이어, 별, 루프탑', tags: ['캠프파이어', '별', '루프탑'] },
+// 별관 방 메타 — 🏬 별관 버튼 → 룸 이동 모달. entry 로 내 위치만 개인 순간이동.
+export const ROOMS = [
+  { key: 'lounge', icon: '🛋️', label: '휴게실', desc: '소파·책·휴식', tags: ['소파', '책', '수다'], entry: { row: 13, col: 7 } },
+  { key: 'petpark', icon: '🐾', label: '펫파크', desc: '고양이·잔디', tags: ['고양이', '잔디', '힐링'], entry: { row: 12, col: 22 } },
+  { key: 'camp', icon: '🏕️', label: '캠핑존', desc: '불멍·텐트·마시멜로', tags: ['불멍', '텐트', '마시멜로'], entry: { row: 12, col: 37 } },
+  { key: 'diner', icon: '🍽️', label: '식당', desc: '주문·식사·수다', tags: ['주문', '식사', '수다'], entry: { row: 12, col: 51 } },
+  { key: 'gym', icon: '🏋️', label: '헬스룸', desc: '러닝·근력·요가', tags: ['러닝', '근력', '요가'], entry: { row: 21, col: 12 } },
+  { key: 'spa', icon: '♨️', label: '온천', desc: '온천·찜질·힐링', tags: ['온천', '찜질', '힐링'], entry: { row: 30, col: 22 } },
+  { key: 'game', icon: '🎮', label: '게임룸', desc: '미니게임·당구·방탈출', tags: ['미니게임', '당구', '방탈출'], entry: { row: 21, col: 39 } },
+  { key: 'karaoke', icon: '🎤', label: '노래방', desc: '노래·무대', tags: ['노래', '무대', '댄스'], entry: { row: 30, col: 51 } },
 ]
-export const isAnnex = (place) => typeof place === 'string' && place.startsWith('annex')
+export const isAnnex = (place) => place === 'annex'
 
 const BLOCKING = new Set([
   'wall', 'partition', 'deskpc', 'mgrdesk', 'mtable', 'rtable', 'board', 'screen', 'plant',
   // 별관 지형/가구 (가까이 접근은 가능, 통과는 불가)
   'spaWater', 'onsenrock', 'lantern', 'arcade', 'escapeWall', 'keypad', 'cafeCounter',
-  'foodTable', 'pochaTent', 'treadmill', 'bike', 'bench', 'dumbbell', 'catTower',
-  'napBed', 'campfire', 'tent', 'barCounter', 'skyline', 'fountain',
+  'foodTable', 'treadmill', 'bike', 'bench', 'dumbbell', 'catTower', 'campfire', 'tent',
+  'barCounter', 'pool', 'sofa', 'shelf',
 ])
 
 export function tileType(place, row, col) {

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { ANNEX_FLOORS } from '../../constants'
+import { ROOMS } from '../../constants'
 
-// 별관 층 선택 모달 — 카드형, ESC/바깥클릭 닫기, 현재 층 배지.
-export default function AnnexFloorModal({ current, onPick, onClose }) {
+// 별관 룸 이동 모달 — 카드형, ESC/바깥클릭 닫기. 방 선택 시 내 위치만 개인 순간이동.
+export default function AnnexFloorModal({ inAnnex, onPick, onClose }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
@@ -15,36 +15,34 @@ export default function AnnexFloorModal({ current, onPick, onClose }) {
         className="annex-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="별관 층 선택"
+        aria-label="별관 룸 이동"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="am-head">
-          <h2>🏬 별관</h2>
+          <h2>🏬 별관 — 룸 이동</h2>
           <button className="am-x" onClick={onClose} aria-label="닫기">✕</button>
         </div>
-        <p className="am-sub">가고 싶은 층을 고르세요. 별관 이동은 개인 이동이라 다른 사람 화면은 바뀌지 않아요.</p>
+        <p className="am-sub">
+          {inAnnex
+            ? '가고 싶은 방을 고르세요. 내 위치만 이동하고 다른 사람 화면은 안 바뀝니다.'
+            : '별관에 입장합니다. 방을 고르면 그 공간으로 바로 이동해요.'}
+        </p>
         <div className="am-grid">
-          {ANNEX_FLOORS.map((f) => {
-            const here = current === f.key
-            return (
-              <button
-                key={f.key}
-                className={'am-card' + (here ? ' here' : '')}
-                onClick={() => onPick(f.key)}
-                aria-label={f.name}
-              >
-                <span className="am-icon">{f.icon}</span>
-                <span className="am-name">
-                  {f.name}
-                  {here && <span className="am-badge">현재 위치</span>}
-                </span>
-                <span className="am-desc">{f.desc}</span>
-                <span className="am-tags">
-                  {f.tags.map((t) => <span key={t} className="am-tag">{t}</span>)}
-                </span>
-              </button>
-            )
-          })}
+          {ROOMS.map((r) => (
+            <button
+              key={r.key}
+              className="am-card"
+              onClick={() => onPick(r.key)}
+              aria-label={r.label}
+            >
+              <span className="am-icon">{r.icon}</span>
+              <span className="am-name">{r.label}</span>
+              <span className="am-desc">{r.desc}</span>
+              <span className="am-tags">
+                {r.tags.map((t) => <span key={t} className="am-tag">{t}</span>)}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
     </div>

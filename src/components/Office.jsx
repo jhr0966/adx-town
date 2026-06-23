@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { TILE, PLACES, PLACE_LIST, ANNEX_FLOORS, isWall, STATUS, DEFAULT_STATUS, isAnnex } from '../constants'
+import { TILE, PLACES, PLACE_LIST, ROOMS, isWall, STATUS, DEFAULT_STATUS, isAnnex } from '../constants'
 import { getNearbyInteraction } from '../lib/interactions'
 import { createRoom, createLobby } from '../lib/realtime'
 import { roomUrl } from '../lib/room'
@@ -722,11 +722,22 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     enterPlace(p, { broadcast: true })
   }, [enterPlace])
 
+  // 별관 룸 이동 — 단일 맵 안에서 내 위치만 개인 순간이동(미진입 시 별관 입장)
+  const goRoom = useCallback((key) => {
+    const room = ROOMS.find((r) => r.key === key)
+    if (!room) return
+    clearActivity()
+    stopAuto()
+    if (placeRef.current !== 'annex') setPlace('annex')
+    setPos(room.entry)
+    roomRef.current?.updateState({ place: 'annex', ...room.entry })
+    setAnnexOpen(false)
+  }, [clearActivity, stopAuto])
+
   // 멤버 로스터 (나 + 동료) / 현재 장소 라벨
   const placeLabel =
     PLACE_LIST.find((pl) => pl.key === place)?.label ||
-    ANNEX_FLOORS.find((f) => f.key === place)?.name ||
-    ''
+    (isAnnex(place) ? '🏬 별관' : '')
   const roster = useMemo(() => {
     const mine = { id: me.id, face: me.avatar, name: me.nickname, status: myStatus, isMe: true }
     const others = [...peers.entries()].map(([id, p]) => ({
@@ -755,8 +766,8 @@ export default function Office({ me, roomId, roomName, onLeave }) {
           <button
             className={'place-btn annex-btn' + (isAnnex(place) ? ' on' : '')}
             onClick={() => setAnnexOpen(true)}
-            aria-label="별관 층 선택"
-            title="별관 — 층 선택"
+            aria-label="별관 룸 이동"
+            title="별관 — 룸 이동"
           >
             🏬 별관
           </button>
@@ -966,8 +977,8 @@ export default function Office({ me, roomId, roomName, onLeave }) {
 
       {annexOpen && (
         <AnnexFloorModal
-          current={place}
-          onPick={(p) => enterPlace(p, { broadcast: false })}
+          inAnnex={isAnnex(place)}
+          onPick={goRoom}
           onClose={() => setAnnexOpen(false)}
         />
       )}
