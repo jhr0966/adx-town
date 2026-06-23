@@ -83,7 +83,7 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
 /* ── 모션 토큰 (keyframes) ── */
 @keyframes adx-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes adx-pop { 0% { opacity: 0; transform: translateY(14px) scale(.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes adx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes adx-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @keyframes adx-bob-sm { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes adx-bob-fast { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes adx-sway { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
@@ -976,19 +976,19 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
   position: absolute;
   bottom: 2px;
   left: 50%;
-  width: 30px;
-  height: 8px;
+  width: 24px;
+  height: 7px;
   border-radius: 50%;
   transform: translateX(-50%);
-  opacity: 0.5;
+  opacity: 0.45;
   filter: blur(1.5px);
 }
 .avatar-emoji {
   position: relative;
   z-index: 1;
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1;
-  filter: drop-shadow(0 4px 4px var(--shadow));
+  filter: drop-shadow(0 3px 3px var(--shadow));
 }
 .avatar.me .avatar-emoji { animation: adx-bob 2.8s ease-in-out infinite; }
 .avatar-name {
@@ -1269,6 +1269,21 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
   cursor: pointer;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 38%, transparent);
 }
+
+/* 간결한 입장 안내 — 인사 + 아이콘 4개 */
+.notice-card.welcome { max-width: 380px; text-align: center; }
+.welcome-hi { font-family: 'Fredoka', sans-serif; font-size: 17px; color: var(--text); margin-bottom: 16px; }
+.welcome-hi b { color: var(--accent); }
+.welcome-face { font-size: 26px; vertical-align: middle; margin-right: 4px; }
+.welcome-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+.welcome-step {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 14px 8px; border-radius: 14px;
+  background: var(--surface-2); border: 1px solid var(--border);
+}
+.ws-icon { font-size: 26px; line-height: 1; }
+.ws-label { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--text); }
+.ws-desc { font-size: 11px; color: var(--muted); }
 
 /* 입·퇴장 시스템 메시지 */
 .msg-system {
@@ -1768,6 +1783,466 @@ button.chat-min { display: none; }
   .dpad { transform: scale(0.82); transform-origin: left bottom; }
   .office.chat-open .tool-dock { flex-direction: row; top: 50px; }
   .office.chat-open .tool-dock .tool { width: 50px; height: 44px; }
+}
+
+/* ============================================================
+   생동감 모션 — 디자인 시스템 모션 토큰을 실제 요소에 연결
+   (adx-sway / glow / ping / mic / eq / pulse-soft / floatup /
+    bob-fast / twinkle)
+   ============================================================ */
+
+/* 화분·식물 살랑임 */
+.tile.plant .tile-icon { animation: adx-sway 3.4s ease-in-out infinite; transform-origin: 50% 92%; }
+
+/* 말하는 아바타 — 뒤로 번지는 발광 후광 */
+.avatar.speaking .avatar-emoji::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150%;
+  height: 150%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-2) 55%, transparent), transparent 68%);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+  animation: adx-glow 1.1s ease-in-out infinite;
+}
+/* 음성 연결 아바타 — 퍼지는 레이더 링 */
+.avatar.voice .avatar-emoji::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--accent-2) 65%, transparent);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: adx-ping 1.9s ease-out infinite;
+}
+
+/* 프레즌스 상태 점 — 은은한 맥동 */
+.st-dot { animation: adx-pulse-soft 2s ease-in-out infinite; }
+
+/* "근처 N명" 칩 — 마이크처럼 숨쉬는 펄스 + 이퀄라이저 막대 */
+.near-chip { animation: adx-mic 2.4s ease-in-out infinite; }
+.near-chip .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 13px; }
+.near-chip .eq i {
+  width: 3px;
+  height: 100%;
+  border-radius: 1.5px;
+  background: var(--accent-2);
+  transform-origin: bottom center;
+  animation: adx-eq 0.8s ease-in-out infinite;
+}
+.near-chip .eq i:nth-child(2) { animation-delay: 0.18s; }
+.near-chip .eq i:nth-child(3) { animation-delay: 0.36s; }
+.near-chip .eq i:nth-child(4) { animation-delay: 0.12s; }
+
+/* ============================================================
+   별관(別館) 타일 — 온천 / 게임존 / 휴게실 / 카페·바
+   ============================================================ */
+.tile.annexfloor { background: transparent; }
+
+/* 온천 — 나무 데크 + 바위 테두리 + 청록 물 */
+.tile.deck {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 30%, var(--surface)), color-mix(in srgb, var(--accent) 16%, var(--floor-alt)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.tile.onsenrock {
+  background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--wall) 80%, #6b5a45), color-mix(in srgb, var(--wall) 60%, #4a3c2c));
+  border-radius: 8px;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.18), 0 2px 4px var(--shadow);
+}
+.tile.water {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 70%, #fff) 0%, color-mix(in srgb, var(--accent-2) 85%, #0a4f48) 100%);
+  box-shadow: inset 0 0 10px color-mix(in srgb, var(--accent-2) 60%, #0a4f48);
+  background-size: 200% 200%;
+  animation: adx-drift 6s ease-in-out infinite;
+}
+.tile.lantern .tile-icon {
+  font-size: 21px;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 80%, transparent));
+  animation: adx-twinkle 2.6s ease-in-out infinite;
+}
+
+/* 게임존 — 아케이드(빠른 통통) + 당구대 + 러그 */
+.tile.arcade {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 55%, #1a1030), color-mix(in srgb, var(--accent-2) 30%, #120a22));
+  border-radius: 6px 6px 3px 3px;
+  box-shadow: 0 3px 6px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.tile.arcade .tile-icon { font-size: 19px; animation: adx-bob-fast 0.9s ease-in-out infinite; }
+.tile.pool {
+  background: radial-gradient(circle at 50% 40%, #2e9e6b, #1d7a4f);
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 50%, #5a3422), 0 2px 5px var(--shadow);
+}
+.tile.pool .tile-icon { font-size: 14px; }
+.tile.barstool { background: transparent; }
+.tile.barstool .tile-icon { font-size: 15px; opacity: 0.9; }
+
+/* 휴게실 — 러그 + 소파 + 책장 */
+.tile.rug {
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 7px, color-mix(in srgb, var(--accent-2) 10%, transparent) 7px 14px);
+  border-radius: 2px;
+}
+.tile.sofa {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 52%, var(--surface)), color-mix(in srgb, var(--accent) 34%, var(--surface)));
+  border-radius: 8px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.28), 0 2px 5px var(--shadow);
+}
+.tile.shelf {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 38%, #6b4226), color-mix(in srgb, var(--accent) 22%, #4a2c18));
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+.tile.shelf .tile-icon { font-size: 16px; }
+
+/* 카페·바 — 카운터 + 분수 */
+.tile.bar {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #5a3422), color-mix(in srgb, var(--accent) 38%, #3a2014));
+  border-radius: 4px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.22), 0 2px 5px var(--shadow);
+}
+.tile.fountain {
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent-2) 75%, #fff), color-mix(in srgb, var(--accent-2) 80%, #0a4f48));
+  border-radius: 50%;
+  box-shadow: inset 0 0 8px color-mix(in srgb, var(--accent-2) 70%, #0a4f48), 0 2px 6px var(--shadow);
+}
+.tile.fountain .tile-icon { font-size: 18px; animation: adx-bob-sm 2.4s ease-in-out infinite; }
+
+/* 분위기 파티클 — 온천 김(steam) / 반짝임(spark) */
+.steam {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: 3;
+  animation: adx-floatup 3.4s ease-in infinite;
+}
+.spark {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff, color-mix(in srgb, var(--accent) 70%, transparent) 60%, transparent 70%);
+  pointer-events: none;
+  z-index: 3;
+  animation: adx-twinkle 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   별관(別館) — 여러 층 타일 / 동적 효과 / 모달·힌트·토스트
+   모든 색은 테마 토큰(--bg/--surface/--accent/--accent-2/--border/--shadow).
+   ============================================================ */
+
+/* 새 모션 토큰 */
+@keyframes adx-steam { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.7); } 30% { opacity: .7; } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1.3); } }
+@keyframes adx-water-ripple { 0% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 35%, transparent); } 50% { box-shadow: inset 0 0 0 6px color-mix(in srgb, #fff 12%, transparent); } 100% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #fff 35%, transparent); } }
+@keyframes adx-fire { 0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: .92; } 35% { transform: translateX(-50%) scaleY(1.25) scaleX(.85); opacity: 1; } 70% { transform: translateX(-50%) scaleY(.9) scaleX(1.12); opacity: .85; } }
+@keyframes adx-ember { 0% { opacity: .9; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -38px) scale(.4); } }
+@keyframes adx-neon { 0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px var(--accent)); } 50% { opacity: .72; filter: drop-shadow(0 0 11px var(--accent)); } }
+@keyframes adx-cat-walk { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes adx-tail { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes adx-treadmill { from { background-position: 0 0; } to { background-position: 0 -14px; } }
+@keyframes adx-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes adx-zzz { 0% { opacity: 0; transform: translate(-50%, 2px) scale(.7); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-30%, -22px) scale(1.1); } }
+@keyframes adx-skyline-twinkle { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes adx-modal-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes adx-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+/* ── 바닥/지형 ── */
+.tile.annexFloor { background: transparent; }
+/* 방 출입구 — 밝은 문턱 */
+.tile.doorway { background: color-mix(in srgb, var(--accent) 14%, var(--surface-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
+/* 방 바닥 색 — 방 전체를 덮는 배경 레이어(타일이 아니라서 장식과 이질감 없음) */
+.room-tint { position: absolute; z-index: 0; border-radius: 10px; pointer-events: none; }
+.rt-green { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 11px, color-mix(in srgb, #6fae54 9%, transparent) 11px 22px); }
+.rt-tan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 12%, transparent) 0 11px, color-mix(in srgb, var(--accent) 6%, transparent) 11px 22px); }
+.rt-peach { background: repeating-linear-gradient(45deg, color-mix(in srgb, #f0936b 14%, transparent) 0 11px, color-mix(in srgb, #f0936b 7%, transparent) 11px 22px); }
+.rt-purple { background: repeating-linear-gradient(45deg, color-mix(in srgb, #9a7bd6 17%, transparent) 0 11px, color-mix(in srgb, #9a7bd6 9%, transparent) 11px 22px); }
+.rt-lav { background: repeating-linear-gradient(45deg, color-mix(in srgb, #b58fd1 16%, transparent) 0 11px, color-mix(in srgb, #b58fd1 8%, transparent) 11px 22px); }
+
+/* 방별 바닥 틴트(구 타일, 미사용) */
+.tile.flrGreen { background: repeating-linear-gradient(45deg, color-mix(in srgb, #6fae54 16%, transparent) 0 10px, color-mix(in srgb, #6fae54 9%, transparent) 10px 20px); }
+.tile.flrTan { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 11%, transparent) 0 10px, color-mix(in srgb, var(--accent) 6%, transparent) 10px 20px); }
+.tile.flrPeach { background: repeating-linear-gradient(45deg, color-mix(in srgb, #f0936b 13%, transparent) 0 10px, color-mix(in srgb, #f0936b 7%, transparent) 10px 20px); }
+.tile.flrPurple { background: repeating-linear-gradient(45deg, color-mix(in srgb, #9a7bd6 16%, transparent) 0 10px, color-mix(in srgb, #9a7bd6 9%, transparent) 10px 20px); }
+.tile.flrLav { background: repeating-linear-gradient(45deg, color-mix(in srgb, #b58fd1 15%, transparent) 0 10px, color-mix(in srgb, #b58fd1 8%, transparent) 10px 20px); }
+.tile.grass { background: color-mix(in srgb, #6fae54 24%, var(--floor)); }
+.tile.deck { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 28%, var(--surface)), color-mix(in srgb, var(--accent) 15%, var(--floor-alt))); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); }
+.tile.onsenrock { background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--wall) 80%, #6b5a45), color-mix(in srgb, var(--wall) 60%, #4a3c2c)); border-radius: 7px; box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.16), 0 2px 4px var(--shadow); }
+/* 온천 물 — 타일에 transform 금지(맵 어긋남). 이음새 없는 청록 수면 + 흐르는 물결 */
+.tile.spaWater {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent-2) 50%, #eafffb), color-mix(in srgb, var(--accent-2) 86%, #06514a));
+}
+.tile.spaWater::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 8px, color-mix(in srgb, #fff 14%, transparent) 8px 9px);
+  opacity: 0.5;
+  animation: adx-ripple-flow 5s linear infinite;
+}
+@keyframes adx-ripple-flow { from { background-position: 0 0; } to { background-position: 0 9px; } }
+.tile.saunaMat { background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--accent) 26%, var(--surface)) 0 8px, color-mix(in srgb, var(--accent) 14%, var(--surface)) 8px 16px); }
+.tile.rug { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 14%, transparent) 0 7px, color-mix(in srgb, var(--accent-2) 10%, transparent) 7px 14px); border-radius: 2px; }
+.tile.napRoom { background: color-mix(in srgb, var(--text) 14%, var(--bg)); }
+.tile.escapeWall { background: color-mix(in srgb, var(--text) 30%, #14101f); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 18%, transparent); }
+.tile.skyline { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 18%, #0c1430), color-mix(in srgb, var(--accent) 10%, #1a1030)); box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--accent) 30%, transparent); animation: adx-skyline-twinkle 4s ease-in-out infinite; }
+
+/* ── 가구/오브젝트 ── */
+.tile.cafeCounter, .tile.barCounter, .tile.bar { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 58%, #5a3422), color-mix(in srgb, var(--accent) 36%, #3a2014)); border-radius: 4px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 2px 5px var(--shadow); }
+.tile.barCounter .tile-icon { animation: adx-neon 2.4s ease-in-out infinite; }
+.tile.foodTable { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 42%, var(--surface)), color-mix(in srgb, var(--accent) 26%, var(--surface))); border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 5px var(--shadow); }
+.tile.foodTable .tile-icon { font-size: 14px; }
+.tile.pochaTent { background: linear-gradient(180deg, #d9484a, #b3343a); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); }
+.tile.pochaTent .tile-icon { animation: adx-neon 2s ease-in-out infinite; }
+.tile.arcade { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 55%, #1a1030), color-mix(in srgb, var(--accent-2) 30%, #120a22)); border-radius: 6px 6px 3px 3px; box-shadow: 0 3px 6px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.tile.arcade .tile-icon { font-size: 18px; animation: adx-bob-fast 0.9s ease-in-out infinite; }
+.tile.keypad { background: #1c1726; border-radius: 5px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 40%, transparent), 0 0 8px color-mix(in srgb, var(--accent-2) 35%, transparent); }
+.tile.keypad .tile-icon { font-size: 14px; animation: adx-pulse-soft 1.6s ease-in-out infinite; }
+.tile.treadmill { background: #2a2535 linear-gradient(0deg, rgba(255, 255, 255, 0.16) 50%, transparent 50%); background-size: 100% 14px; border-radius: 4px; animation: adx-treadmill 0.6s linear infinite; box-shadow: 0 2px 4px var(--shadow); }
+.tile.bike, .tile.bench, .tile.dumbbell { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 38%, var(--surface)), color-mix(in srgb, var(--accent-2) 22%, var(--surface))); border-radius: 5px; box-shadow: 0 2px 4px var(--shadow); }
+.tile.bike .tile-icon, .tile.bench .tile-icon, .tile.dumbbell .tile-icon, .tile.treadmill .tile-icon { font-size: 15px; }
+.tile.yoga { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); border-radius: 6px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+.tile.catTower { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 40%, #7a5a3a), color-mix(in srgb, var(--accent) 24%, #5a3f28)); border-radius: 5px; }
+.tile.petToy .tile-icon { font-size: 15px; animation: adx-bob-sm 1.8s ease-in-out infinite; }
+.tile.napBed { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 40%, var(--surface)), color-mix(in srgb, var(--accent-2) 26%, var(--surface))); border-radius: 7px 7px 4px 4px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 2px 5px var(--shadow); }
+.tile.tent { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 55%, #c25b3a), color-mix(in srgb, var(--accent) 32%, #8a3f28)); clip-path: polygon(50% 8%, 100% 100%, 0 100%); }
+.tile.campChair .tile-icon { font-size: 15px; }
+.tile.campfire { background: radial-gradient(circle at 50% 70%, #b3343a 0%, transparent 60%); }
+.tile.campfire::before { content: '🔥'; position: absolute; left: 50%; bottom: 4px; font-size: 22px; transform-origin: 50% 90%; transform: translateX(-50%); animation: adx-fire 0.5s ease-in-out infinite; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 80%, transparent)); }
+.tile.stairUp, .tile.stairDown { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 30%, var(--surface)), color-mix(in srgb, var(--accent-2) 16%, var(--surface-2))); border-radius: 5px; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-2) 35%, transparent); }
+.tile.stairUp .tile-icon, .tile.stairDown .tile-icon { font-size: 15px; animation: adx-bob-sm 2s ease-in-out infinite; }
+.tile.lantern .tile-icon { font-size: 21px; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 80%, transparent)); animation: adx-twinkle 2.6s ease-in-out infinite; }
+.tile.barstool { background: transparent; }
+.tile.barstool .tile-icon { font-size: 15px; opacity: 0.9; }
+.tile.fountain { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent-2) 75%, #fff), color-mix(in srgb, var(--accent-2) 80%, #0a4f48)); border-radius: 50%; }
+
+/* ── 분위기 파티클(추가): 불씨 / 별 ── */
+.ember { position: absolute; width: 7px; height: 7px; margin: -3.5px 0 0 0; border-radius: 50%; background: radial-gradient(circle, #ffd27a, color-mix(in srgb, var(--accent) 70%, transparent) 60%, transparent 70%); pointer-events: none; z-index: 6; animation: adx-ember 2.4s ease-in infinite; }
+.star { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: radial-gradient(circle, #fff, color-mix(in srgb, var(--accent-2) 60%, transparent) 55%, transparent 70%); pointer-events: none; z-index: 2; animation: adx-twinkle 2.4s ease-in-out infinite; }
+
+/* ── 고양이 NPC ── */
+.npc-cat { position: absolute; display: grid; place-items: center; z-index: 4; cursor: pointer; animation: adx-cat-walk 0.6s ease-in-out infinite; transition: left 1.4s ease, top 1.4s ease; }
+.npc-face { font-size: 22px; filter: drop-shadow(0 3px 3px var(--shadow)); animation: adx-tail 1.3s ease-in-out infinite; }
+.npc-face.flip { transform: scaleX(-1); }
+.npc-say { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px; font-size: 11px; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px var(--shadow); animation: adx-pop 0.15s ease; }
+.npc-heart { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-size: 16px; pointer-events: none; animation: adx-floatup 1.2s ease-in forwards; }
+
+/* ── 아바타 활동 애니메이션 ── */
+.act-icon { position: absolute; bottom: calc(100% - 4px); left: 50%; transform: translateX(-50%); font-size: 16px; pointer-events: none; z-index: 6; }
+.avatar.act-nap .act-icon { animation: adx-zzz 2.2s ease-in infinite; }
+.avatar.act-nap .avatar-emoji { transform: rotate(14deg); }
+.avatar.act-gym-treadmill .avatar-emoji { animation: adx-bob-fast 0.42s ease-in-out infinite; }
+.avatar.act-gym-bike .avatar-emoji { animation: adx-bob-sm 0.4s ease-in-out infinite; }
+.avatar.act-gym-bench .avatar-emoji,
+.avatar.act-gym-dumbbell .avatar-emoji { animation: adx-lift 0.9s ease-in-out infinite; }
+.avatar.act-yoga .avatar-emoji { animation: adx-pulse-soft 3s ease-in-out infinite; }
+.avatar.act-onsen .avatar-emoji, .avatar.act-campfire .avatar-emoji { animation: adx-bob 3.2s ease-in-out infinite; }
+
+/* ── 별관 층 선택 모달 ── */
+.annex-modal-backdrop { position: fixed; inset: 0; z-index: 90; background: color-mix(in srgb, var(--text) 38%, transparent); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.annex-modal { width: min(680px, 96vw); max-height: 88vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 30px 80px var(--shadow); padding: 20px; animation: adx-modal-in 0.22s ease; }
+.am-head { display: flex; align-items: center; justify-content: space-between; }
+.am-head h2 { margin: 0; font-family: 'Fredoka', sans-serif; font-size: 22px; color: var(--text); }
+.am-x { border: none; background: var(--surface-2); color: var(--text); width: 32px; height: 32px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+.am-sub { margin: 6px 0 14px; color: var(--muted); font-size: 13px; }
+.am-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.am-card { display: flex; flex-direction: column; gap: 5px; text-align: left; padding: 14px; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); cursor: pointer; transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
+.am-card:hover { transform: translateY(-3px); box-shadow: 0 10px 22px var(--shadow); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
+.am-card.here { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.am-icon { font-size: 30px; }
+.am-name { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.am-badge { font-size: 10px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+.am-desc { font-size: 12px; color: var(--muted); }
+.am-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.am-tag { font-size: 10.5px; font-weight: 600; color: var(--accent-2); background: color-mix(in srgb, var(--accent-2) 14%, transparent); border-radius: 999px; padding: 2px 8px; }
+.place-btn.annex-btn.on { background: var(--accent); color: #fff; }
+
+/* ── 상호작용 힌트 ── */
+.interact-hint { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); cursor: pointer; animation: adx-pop 0.18s ease; }
+.ih-key { display: inline-grid; place-items: center; min-width: 42px; height: 22px; padding: 0 8px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.3px; }
+
+/* ── 활동 상태 배너 ── */
+.activity-overlay { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); z-index: 18; display: inline-flex; align-items: center; gap: 9px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface) 94%, transparent); color: var(--text); font-size: 13px; font-weight: 600; box-shadow: 0 6px 16px var(--shadow); }
+.ao-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); animation: adx-pulse-soft 1.4s ease-in-out infinite; }
+.ao-stop { border: none; background: var(--surface-2); color: var(--muted); border-radius: 8px; padding: 3px 9px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+/* ── 토스트 ── */
+.office-toast { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 95; max-width: min(420px, 92vw); padding: 11px 18px; border-radius: 14px; background: var(--text); color: var(--bg); font-size: 13px; font-weight: 600; text-align: center; box-shadow: 0 12px 30px var(--shadow); animation: adx-pop 0.18s ease; }
+
+/* ── 미니게임 / 방탈출 모달 ── */
+.mini-backdrop { position: fixed; inset: 0; z-index: 92; background: color-mix(in srgb, var(--text) 42%, transparent); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 16px; }
+.mini-modal, .escape-modal { width: min(440px, 94vw); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 30px 80px var(--shadow); padding: 18px; animation: adx-modal-in 0.22s ease; }
+.escape-modal.shake { animation: adx-shake 0.5s ease; }
+.mini-modal .am-head h2, .escape-modal .am-head h2 { font-size: 19px; }
+.mini-center { text-align: center; padding: 14px 6px; color: var(--text); }
+.mini-go { margin-top: 12px; border: none; background: var(--accent); color: #fff; border-radius: 12px; padding: 10px 22px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.mini-ghost, .mini-row .mini-ghost { background: var(--surface-2); color: var(--text); }
+.mini-row { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+.mini-row button { border: none; border-radius: 12px; padding: 9px 18px; font-weight: 700; cursor: pointer; }
+.mini-result { font-family: 'Fredoka', sans-serif; font-size: 34px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+.mini-grade { color: var(--muted); }
+.mini-arena { position: relative; height: 240px; margin-top: 12px; background: color-mix(in srgb, var(--accent-2) 8%, var(--surface-2)); border-radius: 14px; overflow: hidden; }
+.mini-hud { display: flex; justify-content: space-between; padding: 8px 12px; font-weight: 700; color: var(--text); }
+.mini-target { position: absolute; width: 46px; height: 46px; border-radius: 50%; border: none; transform: translate(-50%, -50%); background: radial-gradient(circle at 38% 32%, #fff, var(--accent)); color: #fff; font-size: 18px; cursor: pointer; box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 70%, transparent); animation: adx-glow 0.7s ease-in-out infinite; }
+.escape-clues { margin: 4px 0 12px; padding-left: 18px; color: var(--text); font-size: 13px; line-height: 1.7; }
+.escape-display { text-align: center; font-family: 'Fredoka', sans-serif; font-size: 30px; letter-spacing: 10px; color: var(--text); background: var(--surface-2); border-radius: 12px; padding: 8px; }
+.escape-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.escape-key { border: 1px solid var(--border); background: var(--surface-2); color: var(--text); border-radius: 12px; padding: 12px 0; font-size: 17px; font-weight: 700; cursor: pointer; }
+.escape-key:hover { border-color: var(--accent); }
+
+@media (max-width: 720px) {
+  .am-grid { grid-template-columns: 1fr 1fr; }
+  /* 모바일: 상호작용 가능 시 누르기 쉬운 큰 버튼으로, Space 칩은 숨김 */
+  .interact-hint { bottom: 150px; font-size: 14px; padding: 11px 20px; background: var(--accent); color: #fff; border-color: transparent; }
+  .interact-hint .ih-key { display: none; }
+  .office-toast { bottom: 150px; }
+}
+/* 터치 기기(포인터 없음)에서도 Space 칩 숨김 */
+@media (pointer: coarse) {
+  .interact-hint .ih-key { display: none; }
+}
+
+/* ============================================================
+   별관 추가 가구/장식 + 온천 입욕(잠김) 효과
+   ============================================================ */
+@keyframes adx-disco { 0% { transform: rotate(0); filter: hue-rotate(0); } 100% { transform: rotate(360deg); filter: hue-rotate(360deg); } }
+@keyframes adx-tv-flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.78; } }
+
+/* 휴게실 TV / 책장 / 주크박스 */
+.tile.tv { background: linear-gradient(180deg, #20263a, #11141f); border-radius: 5px; box-shadow: 0 2px 5px var(--shadow), inset 0 0 8px color-mix(in srgb, var(--accent-2) 40%, transparent); }
+.tile.tv .tile-icon { animation: adx-tv-flicker 1.6s ease-in-out infinite; }
+.tile.jukebox { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 55%, #6a3f7a), color-mix(in srgb, var(--accent) 30%, #3a2350)); border-radius: 7px 7px 4px 4px; box-shadow: 0 3px 6px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.tile.jukebox .tile-icon { animation: adx-neon 1.8s ease-in-out infinite; }
+
+/* 온천 대나무 / 수건 바구니 / 김(steam) */
+.tile.bamboo .tile-icon { font-size: 22px; transform-origin: 50% 95%; animation: adx-sway 3.6s ease-in-out infinite; }
+.tile.towel .tile-icon { font-size: 18px; }
+.fx.steam { animation: adx-steam 3.6s ease-in infinite; }
+
+/* 헬스 정수기 / 거울 */
+.tile.watercooler { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 35%, var(--surface)), color-mix(in srgb, var(--accent-2) 20%, var(--surface))); border-radius: 5px 5px 3px 3px; box-shadow: 0 2px 4px var(--shadow); }
+.tile.watercooler .tile-icon { animation: adx-water-ripple 2.4s ease-in-out infinite; }
+.tile.mirror { background: linear-gradient(115deg, color-mix(in srgb, var(--accent-2) 30%, #cfeee9), color-mix(in srgb, #fff 70%, var(--accent-2))); border-radius: 3px; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 40%, var(--border)); }
+
+/* 게임룸 다트판 / 빈백 */
+.tile.dartboard { background: radial-gradient(circle, #e0533a 0 20%, #f6efe2 20% 40%, #e0533a 40% 60%, #2c2f3a 60% 100%); border-radius: 50%; box-shadow: 0 2px 5px var(--shadow); }
+.tile.dartboard .tile-icon { font-size: 0; }
+.tile.beanbag { background: radial-gradient(circle at 40% 30%, color-mix(in srgb, var(--accent) 55%, var(--surface)), color-mix(in srgb, var(--accent) 32%, var(--surface))); border-radius: 50% 50% 45% 45%; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 2px 4px var(--shadow); }
+.tile.beanbag .tile-icon { font-size: 0; }
+
+/* 노래방 미러볼 */
+.tile.disco .tile-icon { font-size: 20px; animation: adx-disco 3s linear infinite; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-2) 80%, transparent)); }
+
+/* ── 온천 입욕(잠김) — 상체만 보이고 머리에 흰 수건 ── */
+.avatar.act-bath .avatar-pad { display: none; }
+.avatar.act-bath .avatar-emoji { clip-path: inset(0 0 40% 0); filter: drop-shadow(0 2px 2px var(--shadow)); }
+/* 수면 물결 라인 */
+.avatar.act-bath .avatar-emoji::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 38%;
+  width: 165%;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-2) 50%, transparent);
+  animation: adx-water-ripple 2.6s ease-in-out infinite;
+}
+/* 머리 위 흰 수건 */
+.bath-towel {
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 22px;
+  height: 8px;
+  transform: translateX(-50%) rotate(-4deg);
+  background: linear-gradient(180deg, #ffffff, #e9edf2);
+  border-radius: 7px 7px 5px 5px;
+  box-shadow: 0 1px 2px var(--shadow), inset 0 -2px 0 rgba(0, 0, 0, 0.07);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ============================================================
+   큰 가구 오브젝트 — 칸 격자 대신 이어진 사각 (Furniture 레이어)
+   ============================================================ */
+/* 풋프린트 타일은 비주얼 숨김(충돌만 담당) — 오브젝트가 그린다 */
+.tile.spaWater, .tile.pool, .tile.foodTable, .tile.cafeCounter, .tile.barCounter {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.tile.spaWater::after { display: none; }
+.tile.pool .tile-icon, .tile.foodTable .tile-icon,
+.tile.cafeCounter .tile-icon, .tile.barCounter .tile-icon { display: none; }
+
+.furn { position: absolute; z-index: 1; pointer-events: none; }
+.furn-emoji { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 20px; filter: drop-shadow(0 1px 1px var(--shadow)); }
+
+/* 온천: 두꺼운 나무 프레임 + 이어진 청록 수면 */
+.furn-onsen {
+  border-radius: 20px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 52%, #6a4226), color-mix(in srgb, var(--accent) 30%, #45291a));
+  box-shadow: 0 8px 20px var(--shadow), inset 0 3px 0 rgba(255, 255, 255, 0.22), inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+}
+.furn-onsen .furn-water {
+  position: absolute;
+  inset: 13px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent-2) 48%, #eafffb), color-mix(in srgb, var(--accent-2) 86%, #06514a));
+  box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent-2) 55%, #06463f);
+}
+.furn-onsen .furn-water::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(180deg, transparent 0 9px, rgba(255, 255, 255, 0.13) 9px 10px);
+  animation: adx-ripple-flow 5s linear infinite;
+}
+.furn-onsen-sign { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 26px; opacity: 0.85; z-index: 1; }
+
+/* 당구대: 우드 레일 + 펠트 + 6 포켓 + 8볼 */
+.furn-pooltable {
+  border-radius: 13px;
+  background: linear-gradient(180deg, #80502f, #5a3420);
+  box-shadow: 0 6px 14px var(--shadow), inset 0 3px 0 rgba(255, 255, 255, 0.18);
+}
+.furn-pooltable .furn-felt {
+  position: absolute;
+  inset: 9px;
+  border-radius: 7px;
+  background: radial-gradient(circle at 50% 40%, #2fa86f, #1c7a4e);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.32);
+}
+.furn-pocket { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #16120f; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6); z-index: 1; }
+.furn-8 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 19px; height: 19px; border-radius: 50%; background: #1b1b1b; color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; z-index: 2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+
+/* 식탁 / 카운터: 이어진 우드 라운드 */
+.furn-table {
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 46%, var(--surface)), color-mix(in srgb, var(--accent) 28%, var(--surface)));
+  box-shadow: 0 3px 8px var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.32);
+}
+.furn-counter {
+  border-radius: 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 56%, #5a3422), color-mix(in srgb, var(--accent) 34%, #3a2014));
+  box-shadow: 0 4px 10px var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 @media (prefers-reduced-motion: reduce) {
