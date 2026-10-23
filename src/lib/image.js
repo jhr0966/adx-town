@@ -6,7 +6,7 @@ const BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || ''
 
 let _storage = null
 function storageClient() {
-  if (!_storage) _storage = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  if (!_storage) _storage = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
   return _storage
 }
 

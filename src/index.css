@@ -1,3 +1,5 @@
+@import './fonts/fonts.css';
+
 /* ============================================================
    ADX Town — 디자인 시스템 (Dawn / Dusk / Meadow)
    토큰 기반: 모든 색은 CSS 변수로. 컴포넌트에 hex 하드코딩 금지.
@@ -1067,6 +1069,11 @@ h1, h2, .brand-font { font-family: 'Fredoka', 'Plus Jakarta Sans', sans-serif; }
 }
 
 /* 근접("공간 음성") 시각화 */
+.near-chip.conn-chip {
+  top: 56px;
+  background: color-mix(in srgb, #f3b23a 94%, transparent);
+  color: #3a2300;
+}
 .near-chip {
   position: absolute;
   left: 50%;

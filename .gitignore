@@ -12,3 +12,6 @@ playwright-report
 # 에이전트/개인 파일
 .claude
 20260617_생산자동화그룹_장화랑프로.md
+
+# TEAM 스토어 업로드 ZIP (npm run package:store 결과물)
+*.zip

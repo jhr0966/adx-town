@@ -9,6 +9,7 @@
 //   room.sendChat({ text, photo })   채팅/사진 전송
 //   room.onPeers(cb)                 참가자 목록(자신 제외)이 바뀔 때 호출, Map<id, state>
 //   room.onChat(cb)                  새 채팅 메시지 도착 시 호출
+//   room.onStatus(cb)                연결 상태 변화('SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOSED')
 //   room.leave()                     퇴장
 
 import { createClient } from '@supabase/supabase-js'
@@ -26,6 +27,8 @@ function getSupabase() {
   if (!_supabase) {
     _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       realtime: { params: { eventsPerSecond: 20 } },
+      // 로그인 기능이 없으므로 세션을 저장하지 않는다 (TEAM 스토어의 공유 localStorage 를 건드리지 않게)
+      auth: { persistSession: false, autoRefreshToken: false },
     })
   }
   return _supabase
@@ -106,6 +109,7 @@ function createSupabaseRoom({ roomId, me }) {
     if (status === 'SUBSCRIBED') {
       channel.send({ type: 'broadcast', event: 'join', payload: { from: me.id, state: myState } })
     }
+    em.emit('status', status) // 사내망에서 Supabase 가 막혀 있으면 화면에 알리기 위해
   })
 
   // 하트비트: 가만히 있어도 3초마다 생존 신호 → 상대의 _seen 갱신
@@ -149,6 +153,7 @@ function createSupabaseRoom({ roomId, me }) {
     onAnnounce: (cb) => em.on('announce', cb),
     onRock: (cb) => em.on('rock', cb),
     onJoin: (cb) => em.on('join', cb),
+    onStatus: (cb) => em.on('status', cb),
     updateState(partial) {
       myState = { ...myState, ...partial }
       const since = Date.now() - lastSent
@@ -272,6 +277,7 @@ function createLocalRoom({ roomId, me }) {
     onAnnounce: (cb) => em.on('announce', cb),
     onRock: (cb) => em.on('rock', cb),
     onJoin: (cb) => em.on('join', cb),
+    onStatus: (cb) => { em.on('status', cb); cb('SUBSCRIBED') }, // 로컬 모드는 항상 연결됨
     updateState(partial) {
       myState = { ...myState, ...partial }
       announce()

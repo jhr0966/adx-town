@@ -52,6 +52,15 @@ export function useProximityVoice({ roomRef, me, pos, peers }) {
       v.disable()
       setVoiceOn(false)
     } else {
+      // http:// 로 접속한 사내 서버(TEAM 스토어 등)는 브라우저가 마이크 API 를 꺼 둔다 (https 전용)
+      if (!navigator.mediaDevices?.getUserMedia) {
+        alert(
+          '이 주소(http)에서는 브라우저가 마이크를 허용하지 않아 근접 음성을 쓸 수 없어요.\n' +
+          '채팅·화이트보드·화면 공유는 그대로 됩니다.\n' +
+          '(관리자: chrome://flags/#unsafely-treat-insecure-origin-as-secure 에 이 주소를 넣으면 켤 수 있어요)',
+        )
+        return
+      }
       try {
         await v.enable()
         setVoiceOn(true)

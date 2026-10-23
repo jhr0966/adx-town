@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { AVATARS, COLORS } from '../constants'
 import { HAS_SUPABASE } from '../lib/config'
 import { prettyRoomName } from '../lib/realtime'
+import { getPref, setPref } from '../lib/prefs'
 
-// 지난번 닉네임/아바타 기억 (localStorage)
+// 지난번 닉네임/아바타 기억 (개인 설정 저장소 — 일반 빌드 localStorage, TEAM 스토어 빌드 sessionStorage)
 const PREFS_KEY = 'adxtown:prefs'
 function loadPrefs() {
-  try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || {} } catch { return {} }
+  try { return JSON.parse(getPref(PREFS_KEY)) || {} } catch { return {} }
 }
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
@@ -27,7 +28,7 @@ export default function EntryScreen({ onEnter, roomId, roomName, onBack }) {
     const name = nickname.trim()
     if (!name) return
     const nick = name.slice(0, 16)
-    try { localStorage.setItem(PREFS_KEY, JSON.stringify({ nickname: nick, avatar, color })) } catch {}
+    setPref(PREFS_KEY, JSON.stringify({ nickname: nick, avatar, color }))
     onEnter({
       id: (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()).slice(2),
       nickname: nick,
