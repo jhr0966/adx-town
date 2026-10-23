@@ -22,6 +22,18 @@ export const ICE_SERVERS = [
   ...(TURN_URL ? [{ urls: TURN_URL, username: TURN_USERNAME, credential: TURN_CREDENTIAL }] : []),
 ]
 
-// AI 봇(Groq). 운영은 /api/groq 서버리스 프록시(키 비노출) 권장.
-// 로컬 개발용으로만 VITE_GROQ_API_KEY 직접 호출 폴백 (브라우저 노출됨).
+// ── 빌드 모드 (vite.config.js 의 define) ──
+// TEAM_STORE: `npm run build:store` 로 만든 TEAM 스토어용 정적 빌드인지.
+//   - 개인 설정(닉네임·테마)은 sessionStorage 에 둔다 (스토어의 localStorage 는 팀 전체에 공유되므로)
+//   - AI 는 서버리스 프록시 없이 직접 호출 + 스토어의 "팀 공용 API 키" 사용
+export const TEAM_STORE = __TEAM_STORE__
+
+// AI 봇(Groq).
+//   AI_PROXY : 서버리스 프록시 경로(Vercel 빌드 '/api/groq'). TEAM 스토어 빌드는 '' (프록시 없음).
+//   GROQ_BASE: Groq API 원주소 — TEAM 스토어 관리 화면의 "팀 공용 API 키"에 등록하는 주소
+//   GROQ_KEY : 로컬 개발용 직접 호출 키(브라우저 노출됨, 운영 금지)
+export const AI_PROXY = __AI_PROXY__
+export const GROQ_BASE = 'https://api.groq.com'
 export const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY || ''
+// 앱이 API 키를 보관하는 localStorage 이름 (스토어 관리 화면 "앱이 키를 보관하는 이름"에 입력)
+export const API_KEY_STORAGE = 'apiKey'

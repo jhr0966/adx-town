@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:store": "vite build --mode teamstore",
+    "package:store": "npm run build:store && node scripts/package-store.mjs",
     "preview": "vite preview",
     "test": "playwright test"
   },

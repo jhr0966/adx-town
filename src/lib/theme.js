@@ -1,4 +1,6 @@
-// 테마 (Dawn / Dusk / Meadow) — html[data-theme]로 토큰 전환, localStorage 기억.
+// 테마 (Dawn / Dusk / Meadow) — html[data-theme]로 토큰 전환, 개인 설정 저장소(prefs)에 기억.
+import { getPref, setPref } from './prefs'
+
 const KEY = 'adxtown:theme'
 
 export const THEMES = [
@@ -9,7 +11,7 @@ export const THEMES = [
 
 export function getTheme() {
   try {
-    const t = localStorage.getItem(KEY)
+    const t = getPref(KEY)
     if (t && THEMES.some((x) => x.id === t)) return t
   } catch {}
   return 'dawn'
@@ -20,5 +22,5 @@ export function applyTheme(id) {
   document.documentElement.dataset.theme = theme.id
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.setAttribute('content', theme.meta)
-  try { localStorage.setItem(KEY, theme.id) } catch {}
+  setPref(KEY, theme.id)
 }

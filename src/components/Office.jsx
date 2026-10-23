@@ -172,6 +172,9 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     setTimeout(() => setShareCopied(false), 1800)
   }, [ROOM_ID])
 
+  // 실시간 서버 연결 상태 — 사내망에서 Supabase 가 막혀 있으면 "나만 보이는" 상태를 알려 준다
+  const [connState, setConnState] = useState('connecting') // 'connecting' | 'ok' | 'error'
+
   // 방 입장 / 퇴장
   useEffect(() => {
     const room = createRoom({
@@ -180,6 +183,12 @@ export default function Office({ me, roomId, roomName, onLeave }) {
     })
     roomRef.current = room
     room.onRtc(handleVoiceSignal) // 근접 음성 시그널링 → useProximityVoice
+    let connected = false
+    room.onStatus((s) => {
+      if (s === 'SUBSCRIBED') { connected = true; setConnState('ok') }
+      else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT') setConnState('error')
+    })
+    const connTimer = setTimeout(() => { if (!connected) setConnState('error') }, 12000)
 
     const pushSystem = (text) =>
       setMessages((m) => [
@@ -289,7 +298,7 @@ export default function Office({ me, roomId, roomName, onLeave }) {
       }
     })
 
-    return () => room.leave()
+    return () => { clearTimeout(connTimer); room.leave() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me, ROOM_ID])
 
@@ -766,6 +775,11 @@ export default function Office({ me, roomId, roomName, onLeave }) {
 
           {nearCount > 0 && (
             <div className="near-chip">🔊 근처 {nearCount}명 · 음성 연결됨</div>
+          )}
+          {connState === 'error' && (
+            <div className="near-chip conn-chip" title="실시간 서버(Supabase)에 연결하지 못했습니다. 이 PC에서 *.supabase.co 접속이 막혀 있는지 확인해 주세요.">
+              ⚠️ 서버 연결 안 됨 · 다른 사람이 보이지 않아요
+            </div>
           )}
 
           <MiniMap

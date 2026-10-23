@@ -65,6 +65,36 @@ vercel --prod --token=YOUR_TOKEN   # 로그인 버그 회피용 토큰 방식
 - 배포 후 **Deployment Protection → Vercel Authentication 끄기** (안 끄면 친구가 401)
 - 배포·갱신 후 **Ctrl + Shift + R** 강력 새로고침
 
+## 🏬 TEAM 스토어에 올리기 (사내 공용 서버)
+
+TEAM 스토어(사내 정적 웹 서버)용 빌드는 **서버 코드 없이 정적 파일만**으로 동작하도록 따로 만든다.
+
+```bash
+npm run package:store      # = vite build --mode teamstore + ZIP 생성 (+ 올리기 전 자체 점검)
+# → adx-town-teamstore.zip  (index.html 이 맨 위, 약 0.2MB)
+```
+
+1. 스토어 **+ 앱 올리기** → `adx-town-teamstore.zip` 선택 (앱 이름은 `<title>` 의 "ADX 타운"이 제안됨)
+2. 자비스(AI)를 쓰려면 스토어 **관리 화면 → 팀 공용 API 키**에 등록
+   - API 주소: `https://api.groq.com`
+   - 키: Groq API 키 (서버 PC 에만 저장되고 팀원 브라우저로는 가지 않음)
+   - 앱이 키를 보관하는 이름: `apiKey`
+3. 팀원은 `http://서버IP:포트/앱이름/` 으로 접속. 방 링크(`?room=…`)도 그대로 동작
+
+**일반 빌드(`npm run build`, Vercel)와 다른 점**
+
+| 항목 | 일반 빌드 | TEAM 스토어 빌드(`--mode teamstore`) |
+|---|---|---|
+| AI 호출 | `/api/groq` 서버리스 프록시 → 직접 호출 폴백 | 프록시 없음. Groq 원주소로 직접 호출, 스토어가 팀 공용 키를 붙여 줌 (`window.TEAM_SHARED_API`). 없으면 `localStorage.apiKey` |
+| 닉네임·아바타·테마 기억 | `localStorage` | `sessionStorage` (스토어의 `localStorage` 는 팀 전체에 공유되므로 개인 설정을 넣지 않음) |
+| 공통 | 상대 경로(`./assets/…`), 폰트 자체 포함(`src/fonts/`), 외부 CDN 없음, Supabase 세션 미저장 | |
+
+**사내망에서 꼭 확인할 것**
+
+- **실시간 동기화는 Supabase Realtime(인터넷)을 쓴다.** 팀원 PC 에서 `https://*.supabase.co` 와 `wss://*.supabase.co` 가 열려 있어야 서로 보인다. 막혀 있으면 화면 상단에 "⚠️ 서버 연결 안 됨" 칩이 뜨고 나만 보인다. (스토어의 localStorage 브릿지는 초당 수십 건의 위치 동기화에 맞지 않아 대체하지 않았다)
+- **근접 음성은 `http://` 에서 꺼진다.** 브라우저가 비보안 주소에서 마이크 API 를 막기 때문. 버튼을 누르면 안내만 나온다. 꼭 필요하면 Chrome 의 `chrome://flags/#unsafely-treat-insecure-origin-as-secure` 에 스토어 주소를 등록한다.
+- 스토어의 올리기 전 검사에서 `/api/broadcast` 경고가 나올 수 있다. Supabase 라이브러리가 Supabase 호스트 뒤에 붙이는 경로이며 자체 서버 호출이 아니므로 무시해도 된다.
+
 ## 🧪 테스트 (브라우저 2개 자동 검증)
 
 ```bash
@@ -103,17 +133,21 @@ npm test          # Playwright E2E 전체
 ```
 api/
   groq.js                Vercel 서버리스 — Groq 프록시(키 비노출)
+scripts/
+  package-store.mjs      TEAM 스토어용 ZIP 생성 + 올리기 전 자체 점검
 src/
+  fonts/                 자체 포함 웹폰트(Fredoka·Plus Jakarta Sans, OFL)
   App.jsx                랜딩 → 로비(방 선택) → 입장 → 사무실 전환
   constants.js           장소(PLACES) 정의: 타일 맵·좌석·화이트보드·스크린
   lib/
-    config.js            Supabase·ICE·Groq env 감지
+    config.js            Supabase·ICE·Groq env 감지, 빌드 모드(TEAM_STORE)
     realtime.js          실시간 추상화 (Supabase broadcast ↔ BroadcastChannel)
     voice.js             근접 음성 (WebRTC + 음량 분석)
     image.js             이미지 압축·Storage 업로드·클립보드
     path.js              BFS 길찾기(클릭/탭 자동 이동)
     room.js              방 ID 생성·링크/코드 파싱·URL 동기화
-    ai.js                자비스 — Groq 호출(프록시→직접 폴백)
+    ai.js                자비스 — Groq 호출(프록시→직접 폴백, 스토어 공용 키 지원)
+    prefs.js             개인 설정 저장소(일반: localStorage / 스토어 빌드: sessionStorage)
   hooks/
     useCamera.js         카메라(줌/팔로우/전체보기)
     useProximityVoice.js 근접 음성 연결·음량
@@ -121,7 +155,7 @@ src/
   components/
     Landing.jsx          애니메이션 랜딩
     RoomLobby.jsx        방 만들기 / 코드·링크로 입장
-    EntryScreen.jsx      닉네임/아바타 선택(랜덤 기본·localStorage 기억)
+    EntryScreen.jsx      닉네임/아바타 선택(랜덤 기본·개인 설정 기억)
     Office.jsx           메인: 방·이동·카메라·렌더 오케스트레이션
     Chat.jsx             채팅 + 사진 + 감정표현 버튼
     office/              프레젠테이션 컴포넌트(메모)
@@ -138,6 +172,7 @@ src/
 | `VITE_TURN_URL` / `VITE_TURN_USERNAME` / `VITE_TURN_CREDENTIAL` | 음성 TURN 서버 추가 (까다로운 NAT/방화벽 안정화). 없으면 STUN만 |
 | `VITE_SUPABASE_BUCKET` | 이미지를 Supabase Storage(public 버킷)에 업로드 후 URL 공유. 없으면 압축 dataURL 직접 전송 |
 | `GROQ_API_KEY` (서버 전용, Vercel 환경변수) | **자비스** AI 응답. `api/groq.js` 프록시가 사용 — 브라우저 비노출 |
+| (TEAM 스토어) 관리 화면의 팀 공용 API 키 | 주소 `https://api.groq.com` + 키, 보관 이름 `apiKey`. 위 🏬 절 참고 |
 | `VITE_GROQ_API_KEY` (로컬 개발만) | 로컬에서 자비스 직접 호출용. 브라우저 노출되니 운영 금지 |
 
 ## 🛠️ 알려진 제약 / 다음 단계
